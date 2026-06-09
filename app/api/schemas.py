@@ -9,3 +9,7 @@ class IncidentResponse(BaseModel):
     root_cause: str
     confidence: float
     fix_plan: list[str]
+
+class ClusterIncidentRequest(BaseModel):
+    namespace: str
+    deployment: str
