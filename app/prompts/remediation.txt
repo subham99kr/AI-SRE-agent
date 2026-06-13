@@ -17,8 +17,75 @@ Requirements:
 3. Never suggest deleting namespaces.
 4. Prefer rolling updates over deleting Pods.
 5. Include rollout verification commands.
-6. Estimate operational risk.
-7. Indicate whether rollback is possible.
+
+Estimate operational risk using these guidelines:
+
+LOW:
+- Read-only operations
+- Viewing logs
+- Describing resources
+- Checking rollout status
+- Listing Kubernetes resources
+
+MEDIUM:
+- Rolling restart
+- Updating deployment images
+- Scaling replicas
+- Updating ConfigMaps
+- Restarting workloads
+
+HIGH:
+- Patching deployments
+- Changing container commands
+- Modifying Secrets
+- Modifying PersistentVolumeClaims (PVCs)
+- Changing networking
+- Updating StatefulSets
+- Database operations
+
+6. Indicate whether rollback is possible.
+
+7. Every kubectl_command must be executable directly by Python subprocess.run(command.split()).
+
+8. Do NOT generate commands containing any shell operators or shell syntax, including:
+- >
+- >>
+- <
+- |
+- ||
+- &&
+- ;
+- $
+- ``
+- $(...)
+- Environment variable expansion
+
+9. Do NOT generate shell scripts.
+
+10. Do NOT redirect output to files.
+
+11. If reviewing or backing up a resource is recommended, mention it only in the description. The kubectl_command must remain a single executable kubectl command.
+
+For example:
+
+Description:
+Review the current deployment configuration before making changes.
+
+kubectl_command:
+kubectl get deployment broken-app -n default -o yaml
+
+NOT:
+
+kubectl get deployment broken-app -o yaml > backup.yaml
+
+12. Commands should be immediately executable without requiring bash, sh, or any shell.
+
+13. Prefer safe operations before destructive ones.
+
+14. Every remediation plan should end with verification commands such as:
+- kubectl rollout status
+- kubectl get pods
+- kubectl describe pod (when appropriate)
 
 Return ONLY valid JSON.
 
@@ -29,12 +96,20 @@ Example:
   "rollback_available": true,
   "steps": [
     {
-      "description": "Update image",
+      "description": "Review the current deployment configuration.",
+      "kubectl_command": "kubectl get deployment app -n default -o yaml"
+    },
+    {
+      "description": "Update the deployment image.",
       "kubectl_command": "kubectl set image deployment/app app=nginx:latest"
     },
     {
-      "description": "Verify rollout",
-      "kubectl_command": "kubectl rollout status deployment/app"
+      "description": "Verify the rollout.",
+      "kubectl_command": "kubectl rollout status deployment/app -n default"
+    },
+    {
+      "description": "Verify the pods are healthy.",
+      "kubectl_command": "kubectl get pods -n default"
     }
   ]
 }

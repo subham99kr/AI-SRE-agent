@@ -25,3 +25,5 @@ class InvestigationState(
     rollback_available: bool
 
     remediation_steps: list
+
+    execution_results: list

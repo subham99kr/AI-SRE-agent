@@ -10,6 +10,10 @@ from app.workflows.graph_state import (
     InvestigationState
 )
 
+from app.agents.execution_agent import (
+    ExecutionAgent
+)
+
 from app.models.evidence import (
     Evidence
 )
@@ -63,6 +67,10 @@ class InvestigationGraph:
             "plan_remediation",
             self.plan_remediation
         )
+        graph.add_node(
+            "execute_remediation",
+            self.execute_remediation
+        )
 
 
         graph.add_edge(
@@ -87,6 +95,11 @@ class InvestigationGraph:
 
         graph.add_edge(
             "plan_remediation",
+            "execute_remediation"
+        )
+
+        graph.add_edge(
+            "execute_remediation",
             END
         )
 
@@ -222,7 +235,11 @@ class InvestigationGraph:
             "risk":
             result["risk"],
 
-            "requires_approval": True,
+            "requires_approval":
+            result["risk"] in [
+                "MEDIUM",
+                "HIGH"
+            ],
             # result["requires_approval"],
 
             "rollback_available":
@@ -231,4 +248,35 @@ class InvestigationGraph:
             "remediation_steps":
             result["steps"]
 
+        }
+    
+
+    async def execute_remediation(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("EXECUTION NODE")
+        print("=" * 80)
+
+        if state["requires_approval"]:
+
+            print("Execution skipped because approval is required.")
+
+            return {
+                "execution_results": []
+            }
+
+        agent = ExecutionAgent()
+
+        result = await agent.run(
+            remediation_steps=state[
+                "remediation_steps"
+            ]
+        )
+
+        return {
+            "execution_results":
+            result["execution_results"]
         }
