@@ -1,10 +1,17 @@
+import json
+
 from langgraph.graph import (
     StateGraph,
+    START,
     END
 )
 
 from app.workflows.graph_state import (
     InvestigationState
+)
+
+from app.models.evidence import (
+    Evidence
 )
 
 from app.services.evidence_builder import (
@@ -15,12 +22,8 @@ from app.services.incident_classifier import (
     IncidentClassifier
 )
 
-from app.playbooks.crashloop import (
-    CrashLoopPlaybook
-)
-
-from app.playbooks.image_pull import (
-    ImagePullPlaybook
+from app.playbooks.playbook_factory import (
+    PlaybookFactory
 )
 
 from app.agents.root_cause_agent import (
@@ -28,99 +31,8 @@ from app.agents.root_cause_agent import (
 )
 
 
+
 class InvestigationGraph:
-
-    def __init__(self):
-
-        self.builder = EvidenceBuilder()
-
-        self.rca_agent = RootCauseAgent()
-
-    async def collect_evidence(
-        self,
-        state: InvestigationState
-    ):
-
-        evidence = (
-            self.builder
-            .build_incident_context(
-                namespace=state["namespace"],
-                deployment=state["deployment"]
-            )
-        )
-
-        return {
-            "evidence": evidence
-        }
-
-    async def classify_incident(
-        self,
-        state: InvestigationState
-    ):
-
-        incident_type = (
-            IncidentClassifier.classify(
-                state["evidence"]
-            )
-        )
-
-        print("=" * 80)
-        print("INCIDENT TYPE")
-        print(incident_type)
-        print("=" * 80)
-
-        return {
-            "incident_type": incident_type
-        }
-
-    async def analyze_root_cause(
-        self,
-        state: InvestigationState
-    ):
-
-        playbook_text = ""
-
-        if (
-            state["incident_type"]
-            == "CRASH_LOOP"
-        ):
-
-            playbook_text = (
-                CrashLoopPlaybook.get_prompt()
-            )
-
-        elif (
-            state["incident_type"]
-            == "IMAGE_PULL"
-        ):
-
-            playbook_text = (
-                ImagePullPlaybook.get_prompt()
-            )
-
-        result = (
-            await self.rca_agent.analyze(
-                evidence=state["evidence"],
-                incident_type=(
-                    state["incident_type"]
-                ),
-                playbook_text=playbook_text
-            )
-        )
-
-        return {
-            "root_cause": result.get(
-                "root_cause"
-            ),
-            "confidence": result.get(
-                "confidence",
-                0.0
-            ),
-            "fix_plan": result.get(
-                "fix_plan",
-                []
-            )
-        }
 
     def build(self):
 
@@ -143,7 +55,9 @@ class InvestigationGraph:
             self.analyze_root_cause
         )
 
-        graph.set_entry_point(
+
+        graph.add_edge(
+            START,
             "collect_evidence"
         )
 
@@ -163,3 +77,106 @@ class InvestigationGraph:
         )
 
         return graph.compile()
+
+    async def collect_evidence(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("COLLECT_EVIDENCE NODE")
+        print("=" * 80)
+
+        builder = EvidenceBuilder()
+
+        evidence = (
+            builder.build_incident_context(
+                namespace=state["namespace"],
+                deployment=state["deployment"]
+            )
+        )
+
+        return {
+            "evidence":
+            evidence.model_dump()
+        }
+
+    async def classify_incident(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("CLASSIFY_INCIDENT NODE")
+        print("=" * 80)
+
+        evidence = Evidence(
+            **state["evidence"]
+        )
+
+        incident_type = (
+            IncidentClassifier.classify(
+                evidence
+            )
+        )
+
+        print(
+            f"INCIDENT TYPE: {incident_type}"
+        )
+
+        return {
+            "incident_type":
+            incident_type
+        }
+
+    async def analyze_root_cause(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("ROOT_CAUSE NODE")
+        print("=" * 80)
+
+        evidence = Evidence(
+            **state["evidence"]
+        )
+
+        playbook = (
+            PlaybookFactory
+            .get_playbook(
+                state["incident_type"]
+            )
+        )
+
+        playbook_context = ""
+
+        if playbook:
+
+            playbook_context = (
+                playbook.get_context()
+            )
+
+        agent = RootCauseAgent()
+
+        result = await agent.run(
+            evidence_json=json.dumps(
+                state["evidence"],
+                indent=2
+            ),
+            incident_type=state[
+                "incident_type"
+            ],
+            playbook_context=playbook_context
+        )
+
+        return {
+            "root_cause":
+            result["root_cause"],
+
+            "fix_plan":
+            result["fix_plan"],
+
+            "confidence":
+            result["confidence"]
+        }

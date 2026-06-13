@@ -1,7 +1,8 @@
 import json
 
-from app.models.evidence import Evidence
-from app.providers.provider_factory import ProviderFactory
+from app.providers.provider_factory import (
+    ProviderFactory
+)
 
 
 class RootCauseAgent:
@@ -13,11 +14,11 @@ class RootCauseAgent:
             .get_root_cause_provider()
         )
 
-    async def analyze(
+    async def run(
         self,
-        evidence: Evidence,
+        evidence_json: str,
         incident_type: str,
-        playbook_text: str
+        playbook_context: str
     ) -> dict:
 
         with open(
@@ -34,9 +35,9 @@ class RootCauseAgent:
                 f"\nDetected Incident Type:\n"
                 f"{incident_type}\n\n"
                 f"Playbook Guidance:\n\n"
-                f"{playbook_text}\n\n"
+                f"{playbook_context}\n\n"
                 f"Evidence:\n"
-                f"{evidence.model_dump_json(indent=2)}"
+                f"{evidence_json}"
             )
         )
 
@@ -54,4 +55,22 @@ class RootCauseAgent:
         print(response)
         print("=" * 80)
 
-        return json.loads(response)
+        try:
+
+            return json.loads(
+                response
+            )
+
+        except Exception:
+
+            return {
+                "root_cause":
+                "Unable to parse LLM response",
+
+                "confidence":
+                0.0,
+
+                "fix_plan": [
+                    "Inspect raw response"
+                ]
+            }

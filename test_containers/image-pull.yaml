@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-pull-app
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: image-pull-app
+
+  template:
+    metadata:
+      labels:
+        app: image-pull-app
+
+    spec:
+      containers:
+      - name: image-pull
+        image: busybox:this-tag-does-not-exist

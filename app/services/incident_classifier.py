@@ -57,19 +57,22 @@ class IncidentClassifier:
                 ""
             )
 
-            if reason == "BackOff":
-
-                return "CRASH_LOOP"
-
             if (
                 reason in [
                     "ErrImagePull",
                     "Failed"
                 ]
-                and "pull image"
-                in message.lower()
+                and (
+                    "pull image" in message.lower()
+                    or "imagepullbackoff" in message.lower()
+                    or "errimagepull" in message.lower()
+                )
             ):
 
                 return "IMAGE_PULL"
+
+            if reason == "BackOff":
+
+                return "CRASH_LOOP"
 
         return "UNKNOWN"
