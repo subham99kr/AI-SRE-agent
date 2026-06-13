@@ -13,18 +13,6 @@ from app.workflows.investigation_graph import (
 from app.providers.provider_factory import ProviderFactory
 
 
-# from app.services.evidence_builder import (
-#     EvidenceBuilder
-# )
-
-# from app.services.incident_classifier import (
-#     IncidentClassifier
-# )
-
-# from app.playbooks.playbook_factory import (
-#     PlaybookFactory
-# )
-
 
 router = APIRouter()
 
@@ -96,6 +84,30 @@ async def investigate_cluster(
     print(result)
     print("=" * 80)
 
+    print("=" * 80)
+    print("RISK")
+    print(result["risk"])
+    print("=" * 80)
+
+    print("REQUIRES APPROVAL")
+    print(result["requires_approval"])
+    print("=" * 80)
+
+    print("ROLLBACK AVAILABLE")
+    print(result["rollback_available"])
+    print("=" * 80)
+
+    print("REMEDIATION STEPS")
+    for i, step in enumerate(result["remediation_steps"], start=1):
+
+        print(f"{i}. {step['description']}")
+
+        if step.get("kubectl_command"):
+
+            print(f"   $ {step['kubectl_command']}")
+
+    print("=" * 80)
+
     return IncidentResponse(
         root_cause=result.get(
             "root_cause",
@@ -107,113 +119,17 @@ async def investigate_cluster(
                 0.0
             )
         ),
-        fix_plan=result.get(
-            "fix_plan",
-            [
-                "No remediation plan generated"
-            ]
+        risk=result.get(
+            "risk",
+            "UNKNOWN"
+        ),
+        requires_approval=True,
+        rollback_available=result.get(
+            "rollback_available",
+            False
+        ),
+        remediation_steps=result.get(
+            "remediation_steps",
+            []
         )
     )
-
-# @router.post(
-#     "/investigate-cluster",
-#     response_model=IncidentResponse
-# )
-# async def investigate_cluster(
-#     request: ClusterIncidentRequest
-# ):
-
-#     builder = EvidenceBuilder()
-
-#     evidence = builder.build_incident_context(
-#         namespace=request.namespace,
-#         deployment=request.deployment
-#     )
-
-#     incident_type = (
-#         IncidentClassifier.classify(
-#             evidence
-#         )
-#     )
-
-#     playbook = (
-#         PlaybookFactory.get_playbook(
-#             incident_type
-#         )
-#     )
-
-#     playbook_context = ""
-
-#     if playbook:
-
-#         playbook_context = (
-#             playbook.get_context()
-#         )
-
-#     print("=" * 80)
-#     print("INCIDENT TYPE")
-#     print(incident_type)
-#     print("=" * 80)
-
-#     print("=" * 80)
-#     print("EVIDENCE")
-#     print(evidence.model_dump_json(indent=2))
-#     print("=" * 80)
-
-#     llm = ProviderFactory.get_root_cause_provider()
-
-#     with open(
-#         "app/prompts/root_cause.txt",
-#         "r",
-#         encoding="utf-8"
-#     ) as file:
-
-#         template = file.read()
-
-#     incident_payload = f"""
-# Detected Incident Type:
-# {incident_type}
-
-# Playbook Guidance:
-# {playbook_context}
-
-# Incident Evidence:
-# {evidence.model_dump_json(indent=2)}
-# """
-
-#     prompt = template.replace(
-#         "<<INCIDENT>>",
-#         incident_payload
-#     )
-
-#     print("=" * 80)
-#     print("PROMPT")
-#     print(prompt)
-#     print("=" * 80)
-
-#     analysis = await llm.generate(prompt)
-
-#     print("=" * 80)
-#     print("LLM RESPONSE")
-#     print(analysis)
-#     print("=" * 80)
-
-#     try:
-
-#         result = json.loads(
-#             analysis
-#         )
-
-#         return IncidentResponse(
-#             **result
-#         )
-
-#     except Exception:
-
-#         return IncidentResponse(
-#             root_cause="Unable to parse LLM response",
-#             confidence=0.0,
-#             fix_plan=[
-#                 "Inspect raw response in logs"
-#             ]
-#         )

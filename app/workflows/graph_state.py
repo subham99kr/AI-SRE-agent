@@ -16,6 +16,12 @@ class InvestigationState(
 
     root_cause: str
 
-    fix_plan: list[str]
-
     confidence: float
+
+    risk: str
+
+    requires_approval: bool
+
+    rollback_available: bool
+
+    remediation_steps: list

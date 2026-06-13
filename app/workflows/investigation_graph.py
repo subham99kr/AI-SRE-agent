@@ -30,6 +30,10 @@ from app.agents.root_cause_agent import (
     RootCauseAgent
 )
 
+from app.agents.remediation_agent import (
+    RemediationAgent
+)
+
 
 
 class InvestigationGraph:
@@ -55,6 +59,11 @@ class InvestigationGraph:
             self.analyze_root_cause
         )
 
+        graph.add_node(
+            "plan_remediation",
+            self.plan_remediation
+        )
+
 
         graph.add_edge(
             START,
@@ -73,6 +82,11 @@ class InvestigationGraph:
 
         graph.add_edge(
             "analyze_root_cause",
+            "plan_remediation"
+        )
+
+        graph.add_edge(
+            "plan_remediation",
             END
         )
 
@@ -179,4 +193,42 @@ class InvestigationGraph:
 
             "confidence":
             result["confidence"]
+        }
+
+
+
+    async def plan_remediation(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("REMEDIATION NODE")
+        print("=" * 80)
+
+        agent = RemediationAgent()
+
+        result = await agent.run(
+            root_cause=state["root_cause"],
+            incident_type=state["incident_type"],
+
+            evidence_json=json.dumps(
+                state["evidence"],
+                indent=2
+            )
+        )
+
+        return {
+            "risk":
+            result["risk"],
+
+            "requires_approval": True,
+            # result["requires_approval"],
+
+            "rollback_available":
+            result["rollback_available"],
+
+            "remediation_steps":
+            result["steps"]
+
         }
