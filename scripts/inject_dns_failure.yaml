@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dns-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dns-app
+  template:
+    metadata:
+      labels:
+        app: dns-app
+    spec:
+      containers:
+      - name: dns
+        image: busybox
+        command:
+          - sh
+          - -c
+          - |
+            while true
+            do
+              nslookup service-that-does-not-exist.default.svc.cluster.local
+              sleep 5
+            done
