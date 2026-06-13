@@ -27,3 +27,9 @@ class InvestigationState(
     remediation_steps: list
 
     execution_results: list
+
+    verification_success: bool
+
+    verification_message: str
+
+    verification_checks: list[str]

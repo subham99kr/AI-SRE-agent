@@ -1,13 +1,19 @@
 import json
+import asyncio
 
 from langgraph.graph import (
     StateGraph,
     START,
     END
 )
+from app.config.settings import AUTO_APPROVE 
 
 from app.workflows.graph_state import (
     InvestigationState
+)
+
+from app.agents.execution_agent import (
+    ExecutionAgent
 )
 
 from app.agents.execution_agent import (
@@ -36,6 +42,10 @@ from app.agents.root_cause_agent import (
 
 from app.agents.remediation_agent import (
     RemediationAgent
+)
+
+from app.agents.verification_agent import (
+    VerificationAgent
 )
 
 
@@ -71,6 +81,10 @@ class InvestigationGraph:
             "execute_remediation",
             self.execute_remediation
         )
+        graph.add_node(
+            "verify_remediation",
+            self.verify_remediation
+        )
 
 
         graph.add_edge(
@@ -100,6 +114,11 @@ class InvestigationGraph:
 
         graph.add_edge(
             "execute_remediation",
+            "verify_remediation"
+        )
+
+        graph.add_edge(
+            "verify_remediation",
             END
         )
 
@@ -260,23 +279,86 @@ class InvestigationGraph:
         print("EXECUTION NODE")
         print("=" * 80)
 
-        if state["requires_approval"]:
-
-            print("Execution skipped because approval is required.")
-
-            return {
-                "execution_results": []
-            }
-
         agent = ExecutionAgent()
 
-        result = await agent.run(
-            remediation_steps=state[
-                "remediation_steps"
-            ]
+        execution_results = await agent.run(
+            remediation_steps = state["remediation_steps"],
+            approved = (
+                AUTO_APPROVE
+                or not state["requires_approval"]
+            )
         )
 
         return {
-            "execution_results":
-            result["execution_results"]
+            "execution_results": execution_results
+        }
+            
+    async def verify_remediation(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("VERIFICATION NODE")
+        print("=" * 80)
+
+        agent = VerificationAgent()
+
+        last_result = None
+
+        MAX_RETRIES = 6
+
+        WAIT_SECONDS = 5
+
+        for attempt in range(
+            MAX_RETRIES
+        ):
+
+            print(
+                f"Verification Attempt "
+                f"{attempt + 1}/"
+                f"{MAX_RETRIES}"
+            )
+
+            last_result = await agent.run(
+
+                namespace=state["namespace"],
+
+                deployment=state["deployment"]
+
+            )
+
+            if last_result.success:
+
+                print(
+                    "Deployment verified successfully."
+                )
+
+                break
+
+            print(
+
+                f"Verification failed. "
+
+                f"Retrying in "
+
+                f"{WAIT_SECONDS} seconds..."
+
+            )
+
+            await asyncio.sleep(
+                WAIT_SECONDS
+            )
+
+        return {
+
+            "verification_success":
+            last_result.success,
+
+            "verification_message":
+            last_result.message,
+
+            "verification_checks":
+            last_result.checks
+
         }

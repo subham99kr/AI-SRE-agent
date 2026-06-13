@@ -13,19 +13,22 @@ Inputs:
 Requirements:
 
 1. Prefer Kubernetes-native remediation.
+
 2. Suggest kubectl commands whenever appropriate.
+
 3. Never suggest deleting namespaces.
+
 4. Prefer rolling updates over deleting Pods.
+
 5. Include rollout verification commands.
 
 Estimate operational risk using these guidelines:
 
 LOW:
-- Read-only operations
 - Viewing logs
 - Describing resources
-- Checking rollout status
 - Listing Kubernetes resources
+- Reading deployment configuration
 
 MEDIUM:
 - Rolling restart
@@ -45,7 +48,7 @@ HIGH:
 
 6. Indicate whether rollback is possible.
 
-7. Every kubectl_command must be executable directly by Python subprocess.run(command.split()).
+7. Every kubectl_command must be executable directly by Python using shlex.split(command) followed by subprocess.run(...).
 
 8. Do NOT generate commands containing any shell operators or shell syntax, including:
 - >
@@ -56,7 +59,7 @@ HIGH:
 - &&
 - ;
 - $
-- ``
+- `
 - $(...)
 - Environment variable expansion
 
@@ -66,7 +69,7 @@ HIGH:
 
 11. If reviewing or backing up a resource is recommended, mention it only in the description. The kubectl_command must remain a single executable kubectl command.
 
-For example:
+Example:
 
 Description:
 Review the current deployment configuration before making changes.
@@ -80,12 +83,48 @@ kubectl get deployment broken-app -o yaml > backup.yaml
 
 12. Commands should be immediately executable without requiring bash, sh, or any shell.
 
-13. Prefer safe operations before destructive ones.
+13. When using kubectl patch, the JSON payload passed to --patch MUST be wrapped in single quotes so that shlex.split(command) passes it as a single argument.
 
-14. Every remediation plan should end with verification commands such as:
-- kubectl rollout status
-- kubectl get pods
-- kubectl describe pod (when appropriate)
+Correct:
+
+kubectl patch deployment app -n default --patch '{"spec":{"replicas":2}}'
+
+Incorrect:
+
+kubectl patch deployment app -n default --patch {"spec":{"replicas":2}}
+
+14. Prefer high-level kubectl commands over kubectl patch whenever Kubernetes provides an equivalent command.
+
+Preferred examples:
+
+- kubectl set image deployment/app app=nginx:latest
+- kubectl rollout restart deployment/app
+- kubectl scale deployment/app --replicas=3
+
+Use kubectl patch only when no simpler Kubernetes command exists.
+
+15. Never generate commands that delete, force delete, or replace Kubernetes resources unless the incident explicitly requires it.
+
+Do NOT generate commands such as:
+
+- kubectl delete deployment
+- kubectl delete pod
+- kubectl delete namespace
+- kubectl replace --force
+
+16. The value of "risk" must be exactly one of:
+
+- LOW
+- MEDIUM
+- HIGH
+
+17. Prefer safe operations before destructive ones.
+
+18. Every remediation plan should end with verification commands whenever appropriate, such as:
+
+- kubectl rollout status deployment/<deployment> -n <namespace>
+- kubectl get pods -n <namespace>
+- kubectl describe pod <pod-name> -n <namespace>
 
 Return ONLY valid JSON.
 

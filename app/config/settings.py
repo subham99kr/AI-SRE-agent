@@ -9,3 +9,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+AUTO_APPROVE = True      # Use this only for Development

@@ -11,7 +11,14 @@ class CommandResult(BaseModel):
 
     stderr: str
 
-
 class ExecutionResult(BaseModel):
 
-    results: list[CommandResult]
+    step: str
+
+    command: str
+
+    success: bool
+
+    stdout: str
+
+    stderr: str

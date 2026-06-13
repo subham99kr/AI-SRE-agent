@@ -1,3 +1,4 @@
+import shlex
 import subprocess
 
 from app.models.execution import (
@@ -14,11 +15,13 @@ class KubectlTool:
 
         try:
 
+            args = shlex.split(command)
+
             result = subprocess.run(
-                command,
-                shell=True,
+                args,
                 capture_output=True,
-                text=True
+                text=True,
+                timeout=120
             )
 
             return CommandResult(
@@ -108,6 +111,34 @@ class KubectlTool:
         command = (
             f"kubectl describe pod "
             f"{pod_name} "
+            f"-n {namespace}"
+        )
+
+        return self.run(command)
+
+    def get_deployment(
+        self,
+        deployment: str,
+        namespace: str
+    ) -> CommandResult:
+
+        command = (
+            f"kubectl get deployment "
+            f"{deployment} "
+            f"-n {namespace}"
+        )
+
+        return self.run(command)
+
+    def describe_deployment(
+        self,
+        deployment: str,
+        namespace: str
+    ) -> CommandResult:
+
+        command = (
+            f"kubectl describe deployment "
+            f"{deployment} "
             f"-n {namespace}"
         )
 

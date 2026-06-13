@@ -7,11 +7,14 @@ from app.api.schemas import (
     IncidentResponse,
     ClusterIncidentRequest,
 )
+
 from app.workflows.investigation_graph import (
     InvestigationGraph
 )
-from app.providers.provider_factory import ProviderFactory
 
+from app.providers.provider_factory import (
+    ProviderFactory
+)
 
 
 router = APIRouter()
@@ -51,11 +54,25 @@ async def investigate_incident(
     except Exception:
 
         return IncidentResponse(
+
             root_cause="Unable to parse LLM response",
+
             confidence=0.0,
-            fix_plan=[
-                "Inspect raw response in logs"
-            ]
+
+            risk="UNKNOWN",
+
+            requires_approval=True,
+
+            rollback_available=False,
+
+            remediation_steps=[],
+
+            verification_success=False,
+
+            verification_message="Verification not executed.",
+
+            verification_checks=[]
+
         )
 
 
@@ -72,7 +89,7 @@ async def investigate_cluster(
         .build()
     )
 
-    result = await graph.ainvoke(
+    graph_result = await graph.ainvoke(
         {
             "namespace": request.namespace,
             "deployment": request.deployment
@@ -81,24 +98,28 @@ async def investigate_cluster(
 
     print("=" * 80)
     print("GRAPH RESULT")
-    print(result)
+    print(graph_result)
     print("=" * 80)
 
     print("=" * 80)
     print("RISK")
-    print(result["risk"])
+    print(graph_result["risk"])
     print("=" * 80)
 
     print("REQUIRES APPROVAL")
-    print(result["requires_approval"])
+    print(graph_result["requires_approval"])
     print("=" * 80)
 
     print("ROLLBACK AVAILABLE")
-    print(result["rollback_available"])
+    print(graph_result["rollback_available"])
     print("=" * 80)
 
     print("REMEDIATION STEPS")
-    for i, step in enumerate(result["remediation_steps"], start=1):
+
+    for i, step in enumerate(
+        graph_result["remediation_steps"],
+        start=1
+    ):
 
         print(f"{i}. {step['description']}")
 
@@ -108,28 +129,87 @@ async def investigate_cluster(
 
     print("=" * 80)
 
+    print("EXECUTION RESULTS")
+
+    for execution in graph_result.get(
+        "execution_results",
+        []
+    ):
+
+        print(execution)
+
+    print("=" * 80)
+
+    print("VERIFICATION")
+    print("=" * 80)
+
+    print(
+        f"SUCCESS: {graph_result['verification_success']}"
+    )
+
+    print(
+        f"MESSAGE: {graph_result['verification_message']}"
+    )
+
+    print()
+
+    print("CHECKS")
+
+    for check in graph_result[
+        "verification_checks"
+    ]:
+
+        print(f"- {check}")
+
+    print("=" * 80)
+
     return IncidentResponse(
-        root_cause=result.get(
+
+        root_cause=graph_result.get(
             "root_cause",
             "Unknown"
         ),
+
         confidence=float(
-            result.get(
+            graph_result.get(
                 "confidence",
                 0.0
             )
         ),
-        risk=result.get(
+
+        risk=graph_result.get(
             "risk",
             "UNKNOWN"
         ),
-        requires_approval=True,
-        rollback_available=result.get(
+
+        requires_approval=graph_result.get(
+            "requires_approval",
+            True
+        ),
+
+        rollback_available=graph_result.get(
             "rollback_available",
             False
         ),
-        remediation_steps=result.get(
+
+        remediation_steps=graph_result.get(
             "remediation_steps",
             []
+        ),
+
+        verification_success=graph_result.get(
+            "verification_success",
+            False
+        ),
+
+        verification_message=graph_result.get(
+            "verification_message",
+            "Verification not executed."
+        ),
+
+        verification_checks=graph_result.get(
+            "verification_checks",
+            []
         )
+
     )

@@ -33,3 +33,9 @@ class IncidentResponse(BaseModel):
     rollback_available: bool
 
     remediation_steps: list[RemediationStep]
+
+    verification_success: bool
+
+    verification_message: str
+
+    verification_checks: list[str]
