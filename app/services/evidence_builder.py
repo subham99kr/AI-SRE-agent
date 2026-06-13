@@ -1,5 +1,5 @@
 from app.models.evidence import Evidence
-from app.tools.kubernetes_tool import KubernetesTool
+from app.tools.kubernetes_reader import KubernetesTool
 
 
 class EvidenceBuilder:

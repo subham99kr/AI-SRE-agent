@@ -1,4 +1,4 @@
-from app.tools.kubernetes_tool import KubernetesTool
+from app.tools.kubernetes_reader import KubernetesTool
 
 tool = KubernetesTool()
 
