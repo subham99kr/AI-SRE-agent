@@ -1,5 +1,7 @@
 from typing import TypedDict
-
+from app.models.report import (
+    IncidentReport
+)
 
 class InvestigationState(
     TypedDict,
@@ -33,3 +35,5 @@ class InvestigationState(
     verification_message: str
 
     verification_checks: list[str]
+
+    incident_report: IncidentReport

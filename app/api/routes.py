@@ -16,6 +16,10 @@ from app.providers.provider_factory import (
     ProviderFactory
 )
 
+from app.services.report_service import (
+    ReportService
+)
+
 
 router = APIRouter()
 
@@ -163,6 +167,12 @@ async def investigate_cluster(
 
     print("=" * 80)
 
+    print(
+        ReportService.format_terminal(
+            graph_result["incident_report"]
+        )
+    )
+
     return IncidentResponse(
 
         root_cause=graph_result.get(
@@ -210,6 +220,10 @@ async def investigate_cluster(
         verification_checks=graph_result.get(
             "verification_checks",
             []
-        )
+        ),
+        
+        incident_report=graph_result[
+            "incident_report"
+        ]
 
     )

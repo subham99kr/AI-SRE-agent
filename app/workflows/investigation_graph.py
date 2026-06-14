@@ -48,6 +48,10 @@ from app.agents.verification_agent import (
     VerificationAgent
 )
 
+from app.agents.summarizer_agent import (
+    SummarizerAgent
+)
+
 
 
 class InvestigationGraph:
@@ -85,6 +89,10 @@ class InvestigationGraph:
             "verify_remediation",
             self.verify_remediation
         )
+        graph.add_node(
+            "generate_summary",
+            self.generate_summary
+        )
 
 
         graph.add_edge(
@@ -119,6 +127,11 @@ class InvestigationGraph:
 
         graph.add_edge(
             "verify_remediation",
+            "generate_summary"
+        )
+
+        graph.add_edge(
+            "generate_summary",
             END
         )
 
@@ -360,5 +373,51 @@ class InvestigationGraph:
 
             "verification_checks":
             last_result.checks
+
+        }
+    
+
+    async def generate_summary(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("SUMMARY NODE")
+        print("=" * 80)
+
+        agent = SummarizerAgent()
+
+        report = await agent.run(
+
+            namespace=state["namespace"],
+
+            deployment=state["deployment"],
+
+            incident_type=state["incident_type"],
+
+            root_cause=state["root_cause"],
+
+            confidence=state["confidence"],
+
+            risk=state["risk"],
+
+            requires_approval=state["requires_approval"],
+
+            rollback_available=state["rollback_available"],
+
+            remediation_steps=state["remediation_steps"],
+
+            execution_results=state["execution_results"],
+
+            verification_success=state["verification_success"],
+
+            verification_message=state["verification_message"]
+
+        )
+
+        return {
+
+            "incident_report": report
 
         }
