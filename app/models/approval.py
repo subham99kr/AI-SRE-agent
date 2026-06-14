@@ -1,0 +1,9 @@
+class ApprovalStatus:
+
+    PENDING = "PENDING"
+
+    APPROVED = "APPROVED"
+
+    REJECTED = "REJECTED"
+
+    AUTO_APPROVED = "AUTO_APPROVED"

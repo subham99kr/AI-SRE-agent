@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class IncidentRequest(BaseModel):
@@ -39,3 +40,49 @@ class IncidentResponse(BaseModel):
     verification_message: str
 
     verification_checks: list[str]
+
+    incident_id: str | None = None
+
+
+class IncidentListItem(BaseModel):
+
+    id: str
+
+    created_at: datetime
+
+    namespace: str
+
+    deployment: str
+
+    incident_type: str
+
+    risk: str
+
+    verification_success: bool
+
+
+class IncidentDetailsResponse(BaseModel):
+
+    id: str
+
+    created_at: datetime
+
+    namespace: str
+
+    deployment: str
+
+    incident_type: str
+
+    root_cause: str
+
+    confidence: float
+
+    risk: str
+
+    requires_approval: bool
+
+    rollback_available: bool
+
+    verification_success: bool
+
+    verification_message: str

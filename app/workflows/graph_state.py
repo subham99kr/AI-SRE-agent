@@ -37,3 +37,5 @@ class InvestigationState(
     verification_checks: list[str]
 
     incident_report: IncidentReport
+
+    incident_id: str | None

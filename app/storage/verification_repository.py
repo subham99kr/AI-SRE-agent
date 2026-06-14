@@ -1,34 +1,34 @@
 from sqlalchemy import select
 
-from app.database.remediation import Remediation
+from app.database.verification import Verification
 
 from app.storage.base_repository import (
     BaseRepository
 )
 
 
-class RemediationRepository(BaseRepository):
+class VerificationRepository(BaseRepository):
 
     def create(
         self,
-        remediation: Remediation
-    ) -> Remediation:
+        verification: Verification
+    ) -> Verification:
 
         self.add(
-            remediation
+            verification
         )
 
-        return remediation
+        return verification
 
     def get(
         self,
         incident_id: str
-    ) -> Remediation | None:
+    ) -> Verification | None:
 
         statement = select(
-            Remediation
+            Verification
         ).where(
-            Remediation.incident_id == incident_id
+            Verification.incident_id == incident_id
         )
 
         return self.db.scalar(

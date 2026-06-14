@@ -52,6 +52,10 @@ from app.agents.summarizer_agent import (
     SummarizerAgent
 )
 
+from app.services.persistence_service import (
+    PersistenceService
+)
+
 
 
 class InvestigationGraph:
@@ -93,6 +97,10 @@ class InvestigationGraph:
             "generate_summary",
             self.generate_summary
         )
+        graph.add_node(
+            "persist",
+            self.persist_node
+        )
 
 
         graph.add_edge(
@@ -132,6 +140,10 @@ class InvestigationGraph:
 
         graph.add_edge(
             "generate_summary",
+            "persist"
+        )
+        graph.add_edge(
+            "persist",
             END
         )
 
@@ -421,3 +433,18 @@ class InvestigationGraph:
             "incident_report": report
 
         }
+    
+
+    async def persist_node(
+        self,
+        state: InvestigationState
+    ):
+
+        incident_id = (
+            PersistenceService()
+            .save(state)
+        )
+
+        state["incident_id"] = incident_id
+
+        return state

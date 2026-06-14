@@ -1,6 +1,7 @@
 import json
 
 from fastapi import APIRouter
+from fastapi import HTTPException
 
 from app.api.schemas import (
     IncidentRequest,
@@ -18,6 +19,15 @@ from app.providers.provider_factory import (
 
 from app.services.report_service import (
     ReportService
+)
+
+from app.services.incident_service import (
+    IncidentService
+)
+
+from app.api.schemas import (
+    IncidentListItem,
+    IncidentDetailsResponse,
 )
 
 
@@ -224,6 +234,66 @@ async def investigate_cluster(
         
         incident_report=graph_result[
             "incident_report"
-        ]
+        ],
+        incident_id=graph_result.get(
+            "incident_id"
+        )
 
     )
+
+
+@router.get(
+    "/incidents",
+    response_model=list[IncidentListItem]
+)
+async def get_incidents():
+
+    incidents = (
+        IncidentService()
+        .get_incidents()
+    )
+
+    return incidents
+
+
+@router.get(
+    "/incidents/latest",
+    response_model=list[IncidentListItem]
+)
+async def get_latest_incidents():
+
+    incidents = (
+        IncidentService()
+        .get_latest()
+    )
+
+    return incidents
+
+@router.get(
+    "/incidents/latest",
+    response_model=list[IncidentListItem]
+)
+async def get_latest_incidents():
+
+    incidents = (
+        IncidentService()
+        .get_latest()
+    )
+
+    return incidents
+
+
+@router.delete(
+    "/incidents/{incident_id}"
+)
+async def delete_incident(
+    incident_id: str
+):
+
+    IncidentService().delete_incident(
+        incident_id
+    )
+
+    return {
+        "message": "Incident deleted successfully."
+    }
