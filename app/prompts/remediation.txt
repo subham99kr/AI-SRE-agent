@@ -131,7 +131,9 @@ Return ONLY valid JSON.
 Example:
 
 {
-  "risk": "LOW",
+  "risk": "LOW | MEDIUM | HIGH | CRITICAL",
+  "requires_approval": true,
+  "approval_reason": "Explain why approval is or isn't required.",
   "rollback_available": true,
   "steps": [
     {

@@ -24,6 +24,10 @@ class InvestigationState(
 
     requires_approval: bool
 
+    approval_status: str
+
+    approval_reason: str | None
+
     rollback_available: bool
 
     remediation_steps: list

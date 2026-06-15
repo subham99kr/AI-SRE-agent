@@ -76,19 +76,23 @@ Evidence:
 
             return {
 
-                "risk": "UNKNOWN", 
+                "risk": "UNKNOWN",
+
+                "requires_approval": True,
+
+                "approval_reason": (
+                    "Unable to determine remediation safety."
+                ),
 
                 "rollback_available": False,
 
                 "steps": [
 
                     {
-
                         "description":
                         "Unable to parse remediation.",
 
                         "kubectl_command": None
-
                     }
 
                 ]

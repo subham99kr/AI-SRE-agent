@@ -6,7 +6,6 @@ from langgraph.graph import (
     START,
     END
 )
-from app.config.settings import AUTO_APPROVE 
 
 from app.workflows.graph_state import (
     InvestigationState
@@ -85,6 +84,12 @@ class InvestigationGraph:
             "plan_remediation",
             self.plan_remediation
         )
+
+        graph.add_node(
+            "approval",
+            self.approval_node
+        )
+
         graph.add_node(
             "execute_remediation",
             self.execute_remediation
@@ -125,7 +130,16 @@ class InvestigationGraph:
 
         graph.add_edge(
             "plan_remediation",
-            "execute_remediation"
+            "approval"
+        )
+
+        graph.add_conditional_edges(
+            "approval",
+            self.route_after_approval,
+            {
+                "execute": "execute_remediation",
+                "stop": END
+            }
         )
 
         graph.add_edge(
@@ -280,11 +294,10 @@ class InvestigationGraph:
             result["risk"],
 
             "requires_approval":
-            result["risk"] in [
-                "MEDIUM",
-                "HIGH"
-            ],
-            # result["requires_approval"],
+            result["requires_approval"],
+
+            "approval_reason":
+            result["approval_reason"],
 
             "rollback_available":
             result["rollback_available"],
@@ -308,10 +321,7 @@ class InvestigationGraph:
 
         execution_results = await agent.run(
             remediation_steps = state["remediation_steps"],
-            approved = (
-                AUTO_APPROVE
-                or not state["requires_approval"]
-            )
+            approved =  state["requires_approval"]
         )
 
         return {
@@ -448,3 +458,59 @@ class InvestigationGraph:
         state["incident_id"] = incident_id
 
         return state
+    
+
+    async def approval_node(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("APPROVAL NODE")
+        print("=" * 80)
+
+        #
+        # LOW risk → execute automatically
+        #
+
+        if not state["requires_approval"]:
+
+            print("AUTO APPROVED")
+
+            return {
+
+                "approval_status":
+                "AUTO_APPROVED"
+
+            }
+
+        #
+        # MEDIUM/HIGH/CRITICAL
+        #
+
+        print("WAITING FOR HUMAN APPROVAL")
+
+        print(
+            state["approval_reason"]
+        )
+
+        return {
+
+            "approval_status":
+            "PENDING"
+
+        }
+        
+    async def route_after_approval(
+        self,
+        state: InvestigationState
+    ):
+
+        if (
+            state["approval_status"]
+            == "AUTO_APPROVED"
+        ):
+
+            return "execute"
+
+        return "stop"
