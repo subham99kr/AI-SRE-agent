@@ -101,3 +101,14 @@ class IncidentRepository(BaseRepository):
         return list(
             self.db.scalars(statement)
         )
+    
+    def update(
+        self,
+        incident: Incident
+    ) -> Incident:
+
+        self.db.merge(
+            incident
+        )
+
+        return incident

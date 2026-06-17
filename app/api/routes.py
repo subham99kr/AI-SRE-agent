@@ -24,6 +24,9 @@ from app.services.report_service import (
 from app.services.incident_service import (
     IncidentService
 )
+from app.workflows.execution_graph import (
+    ExecutionGraph
+)
 
 from app.api.schemas import (
     IncidentListItem,
@@ -89,7 +92,6 @@ async def investigate_incident(
 
         )
 
-
 @router.post(
     "/investigate-cluster",
     response_model=IncidentResponse
@@ -128,6 +130,18 @@ async def investigate_cluster(
     print(graph_result["rollback_available"])
     print("=" * 80)
 
+    print("APPROVAL STATUS")
+    print(graph_result["approval_status"])
+    print("=" * 80)
+
+    print("WORKFLOW STATUS")
+    print(graph_result["status"])
+    print("=" * 80)
+
+    print("APPROVAL REASON")
+    print(graph_result["approval_reason"])
+    print("=" * 80)
+
     print("REMEDIATION STEPS")
 
     for i, step in enumerate(
@@ -139,105 +153,56 @@ async def investigate_cluster(
 
         if step.get("kubectl_command"):
 
-            print(f"   $ {step['kubectl_command']}")
-
-    print("=" * 80)
-
-    print("EXECUTION RESULTS")
-
-    for execution in graph_result.get(
-        "execution_results",
-        []
-    ):
-
-        print(execution)
-
-    print("=" * 80)
-
-    print("VERIFICATION")
-    print("=" * 80)
-
-    print(
-        f"SUCCESS: {graph_result['verification_success']}"
-    )
-
-    print(
-        f"MESSAGE: {graph_result['verification_message']}"
-    )
-
-    print()
-
-    print("CHECKS")
-
-    for check in graph_result[
-        "verification_checks"
-    ]:
-
-        print(f"- {check}")
+            print(
+                f"   $ {step['kubectl_command']}"
+            )
 
     print("=" * 80)
 
     print(
-        ReportService.format_terminal(
-            graph_result["incident_report"]
-        )
+        f"INCIDENT SAVED : "
+        f"{graph_result['incident_id']}"
     )
+
+    print("=" * 80)
 
     return IncidentResponse(
 
-        root_cause=graph_result.get(
-            "root_cause",
-            "Unknown"
-        ),
+        root_cause=graph_result["root_cause"],
 
-        confidence=float(
-            graph_result.get(
-                "confidence",
-                0.0
-            )
-        ),
+        confidence=graph_result["confidence"],
 
-        risk=graph_result.get(
-            "risk",
-            "UNKNOWN"
-        ),
+        risk=graph_result["risk"],
 
-        requires_approval=graph_result.get(
-            "requires_approval",
-            True
-        ),
+        status=graph_result["status"],
 
-        rollback_available=graph_result.get(
-            "rollback_available",
-            False
-        ),
+        approval_status=graph_result["approval_status"],
 
-        remediation_steps=graph_result.get(
-            "remediation_steps",
-            []
-        ),
+        approval_reason=graph_result["approval_reason"],
 
-        verification_success=graph_result.get(
-            "verification_success",
-            False
-        ),
-
-        verification_message=graph_result.get(
-            "verification_message",
-            "Verification not executed."
-        ),
-
-        verification_checks=graph_result.get(
-            "verification_checks",
-            []
-        ),
-        
-        incident_report=graph_result[
-            "incident_report"
+        requires_approval=graph_result[
+            "requires_approval"
         ],
-        incident_id=graph_result.get(
+
+        rollback_available=graph_result[
+            "rollback_available"
+        ],
+
+        remediation_steps=graph_result[
+            "remediation_steps"
+        ],
+
+        verification_success=False,
+
+        verification_message="Pending approval.",
+
+        verification_checks=[],
+
+        incident_report=None,
+
+        incident_id=graph_result[
             "incident_id"
-        )
+        ]
 
     )
 
@@ -296,4 +261,76 @@ async def delete_incident(
 
     return {
         "message": "Incident deleted successfully."
+    }
+@router.post(
+    "/incidents/{incident_id}/approve"
+)
+async def approve_incident(
+    incident_id: str
+):
+
+    #
+    # Approve Incident
+    #
+
+    incident = (
+        IncidentService()
+        .approve_incident(
+            incident_id,
+            "admin"
+        )
+    )
+
+    if incident is None:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Incident not found."
+        )
+
+    #
+    # Execute Approved Incident
+    #
+
+    graph = (
+        ExecutionGraph()
+        .build()
+    )
+
+    result = await graph.ainvoke(
+        {
+            "incident_id": incident_id
+        }
+    )
+
+    #
+    # Return Final Result
+    #
+
+    return {
+
+        "message":
+        "Incident executed successfully.",
+
+        "incident_id":
+        incident.id,
+
+        "status":
+        result["incident"].status,
+
+        "approval_status":
+        result["incident"].approval_status,
+
+        "approved_by":
+        result["incident"].approved_by,
+
+        "verification_success":
+        result["verification_success"],
+
+        "verification_message":
+        result["verification_message"],
+
+        "report":
+        result["incident_report"]
+
     }

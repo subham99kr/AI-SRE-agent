@@ -90,18 +90,18 @@ class InvestigationGraph:
             self.approval_node
         )
 
-        graph.add_node(
-            "execute_remediation",
-            self.execute_remediation
-        )
-        graph.add_node(
-            "verify_remediation",
-            self.verify_remediation
-        )
-        graph.add_node(
-            "generate_summary",
-            self.generate_summary
-        )
+        # graph.add_node(
+        #     "execute_remediation",
+        #     self.execute_remediation
+        # )
+        # graph.add_node(
+        #     "verify_remediation",
+        #     self.verify_remediation
+        # )
+        # graph.add_node(
+        #     "generate_summary",
+        #     self.generate_summary
+        # )
         graph.add_node(
             "persist",
             self.persist_node
@@ -133,29 +133,25 @@ class InvestigationGraph:
             "approval"
         )
 
-        graph.add_conditional_edges(
+        graph.add_edge(
             "approval",
-            self.route_after_approval,
-            {
-                "execute": "execute_remediation",
-                "stop": END
-            }
-        )
-
-        graph.add_edge(
-            "execute_remediation",
-            "verify_remediation"
-        )
-
-        graph.add_edge(
-            "verify_remediation",
-            "generate_summary"
-        )
-
-        graph.add_edge(
-            "generate_summary",
             "persist"
         )
+
+        # graph.add_edge(
+        #     "execute_remediation",
+        #     "verify_remediation"
+        # )
+
+        # graph.add_edge(
+        #     "verify_remediation",
+        #     "generate_summary"
+        # )
+
+        # graph.add_edge(
+        #     "generate_summary",
+        #     "persist"
+        # )
         graph.add_edge(
             "persist",
             END
@@ -480,7 +476,10 @@ class InvestigationGraph:
             return {
 
                 "approval_status":
-                "AUTO_APPROVED"
+                "AUTO_APPROVED",
+
+                "status":
+                "APPROVED"
 
             }
 
@@ -497,20 +496,31 @@ class InvestigationGraph:
         return {
 
             "approval_status":
-            "PENDING"
+            "PENDING",
+
+            "status":
+            "PENDING_APPROVAL"
 
         }
-        
+    
     async def route_after_approval(
         self,
         state: InvestigationState
     ):
 
-        if (
-            state["approval_status"]
-            == "AUTO_APPROVED"
-        ):
+        return "persist"
+        
+    # async def route_after_approval(
+    #     self,
+    #     state: InvestigationState
+    # ):
 
-            return "execute"
+    #     if state["approval_status"] == "AUTO_APPROVED":
 
-        return "stop"
+    #         state["status"] = "APPROVED"
+
+    #         return "persist"
+
+    #     state["status"] = "PENDING_APPROVAL"
+
+    #     return "persist_pending"

@@ -72,3 +72,24 @@ class Incident(Base):
     verification_message: Mapped[str] = mapped_column(
         String(500)
     )
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="PENDING_APPROVAL"
+    )
+    
+    approval_status: Mapped[str] = mapped_column(
+        String(20),
+        default="PENDING"
+    )
+
+    approval_reason: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True
+    )
+
+    approved_by: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
+    )
+
+    # approved_at i will implement later

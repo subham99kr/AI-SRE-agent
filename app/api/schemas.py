@@ -29,6 +29,12 @@ class IncidentResponse(BaseModel):
 
     risk: str
 
+    status: str
+
+    approval_status: str
+
+    approval_reason: str
+    
     requires_approval: bool = True
 
     rollback_available: bool

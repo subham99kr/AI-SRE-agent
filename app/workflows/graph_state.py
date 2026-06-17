@@ -22,6 +22,8 @@ class InvestigationState(
 
     risk: str
 
+    status: str
+
     requires_approval: bool
 
     approval_status: str

@@ -40,6 +40,7 @@ class PersistenceService:
             #
 
             incident = Incident(
+
                 namespace=state["namespace"],
                 deployment=state["deployment"],
                 incident_type=state["incident_type"],
@@ -48,8 +49,12 @@ class PersistenceService:
                 risk=state["risk"],
                 requires_approval=state["requires_approval"],
                 rollback_available=state["rollback_available"],
-                verification_success=state["verification_success"],
-                verification_message=state["verification_message"],
+                status=state["status"],
+                approval_status=state["approval_status"],
+                approval_reason=state["approval_reason"],
+                approved_by=None,
+                verification_success=False,
+                verification_message="Waiting for execution."
             )
 
             incident_repo.create(incident)
@@ -83,52 +88,52 @@ class PersistenceService:
                 )
             )
 
-            #
-            # Save Verification
-            #
+            # #
+            # # Save Verification
+            # #
 
-            verification_repo.create(
-                Verification(
-                    incident_id=incident.id,
-                    success=state["verification_success"],
-                    message=state["verification_message"],
-                    checks=state["verification_checks"],
-                )
-            )
+            # verification_repo.create(
+            #     Verification(
+            #         incident_id=incident.id,
+            #         success=state["verification_success"],
+            #         message=state["verification_message"],
+            #         checks=state["verification_checks"],
+            #     )
+            # )
 
-            #
-            # Save Execution Results
-            #
+            # #
+            # # Save Execution Results
+            # #
 
-            for item in state["execution_results"]:
+            # for item in state["execution_results"]:
 
-                execution_repo.create(
-                    Execution(
-                        incident_id=incident.id,
-                        step=item["step"],
-                        command=item["command"],
-                        success=item["success"],
-                        stdout=item["stdout"],
-                        stderr=item["stderr"],
-                    )
-                )
+            #     execution_repo.create(
+            #         Execution(
+            #             incident_id=incident.id,
+            #             step=item["step"],
+            #             command=item["command"],
+            #             success=item["success"],
+            #             stdout=item["stdout"],
+            #             stderr=item["stderr"],
+            #         )
+            #     )
 
             #
             # Save Report
             #
 
-            report = state["incident_report"].model_dump()
+            # report = state["incident_report"].model_dump()
 
-            report_repo.create(
-                Report(
-                    incident_id=incident.id,
-                    title=report["title"],
-                    executive_summary=report["executive_summary"],
-                    technical_summary=report["technical_summary"],
-                    overall_status=report["overall_status"],
-                    recommendations=report["recommendations"],
-                )
-            )
+            # report_repo.create(
+            #     Report(
+            #         incident_id=incident.id,
+            #         title=report["title"],
+            #         executive_summary=report["executive_summary"],
+            #         technical_summary=report["technical_summary"],
+            #         overall_status=report["overall_status"],
+            #         recommendations=report["recommendations"],
+            #     )
+            # )
 
             db.commit()
 
