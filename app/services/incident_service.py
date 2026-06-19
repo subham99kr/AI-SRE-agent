@@ -6,6 +6,8 @@ from app.storage.incident_repository import (
     IncidentRepository
 )
 
+from datetime import datetime, UTC
+
 
 class IncidentService:
 
@@ -220,6 +222,99 @@ class IncidentService:
             )
 
             db.commit()
+
+            return incident
+
+        except Exception:
+
+            db.rollback()
+
+            raise
+
+        finally:
+
+            db.close()
+
+    def get_attempts(
+        self,
+        root_id: str
+    ):
+
+        db = SessionLocal()
+
+        try:
+
+            repo = IncidentRepository(db)
+
+            return repo.get_attempts(
+                root_id
+            )
+
+        finally:
+
+            db.close()
+
+    def get_attempts_by_root(
+        self,
+        root_incident_id: str
+    ):
+
+        db = SessionLocal()
+
+        try:
+
+            repo = IncidentRepository(db)
+
+            return repo.get_attempts_by_root(
+                root_incident_id
+            )
+
+        finally:
+
+            db.close()
+    
+
+
+    def reject_incident(
+        self,
+        incident_id: str,
+        feedback: str,
+        user: str
+    ):
+
+        db: Session = SessionLocal()
+
+        try:
+
+            repo = IncidentRepository(db)
+
+            incident = repo.get(
+                incident_id
+            )
+
+            if incident is None:
+
+                return None
+
+            incident.status = "REJECTED"
+
+            incident.approval_status = "REJECTED"
+
+            incident.operator_feedback = feedback
+
+            incident.feedback_by = user
+
+            incident.feedback_at = datetime.now(UTC)
+
+            repo.update(
+                incident
+            )
+
+            db.commit()
+
+            db.refresh(
+                incident
+            )
 
             return incident
 

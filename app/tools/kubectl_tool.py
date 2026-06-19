@@ -1,5 +1,6 @@
 import shlex
 import subprocess
+import json
 
 from app.models.execution import (
     CommandResult
@@ -143,3 +144,47 @@ class KubectlTool:
         )
 
         return self.run(command)
+    
+    def get_pods_json(
+        self,
+        namespace: str
+    ):
+
+        result = self.run(
+
+            f"kubectl get pods "
+            f"-n {namespace} "
+            f"-o json"
+
+        )
+
+        if not result.success:
+
+            return None
+
+        return json.loads(
+            result.stdout
+        )
+        
+    def get_deployment_json(
+        self,
+        deployment: str,
+        namespace: str
+    ):
+
+        result = self.run(
+
+            f"kubectl get deployment "
+            f"{deployment} "
+            f"-n {namespace} "
+            f"-o json"
+
+        )
+
+        if not result.success:
+
+            return None
+
+        return json.loads(
+            result.stdout
+        )

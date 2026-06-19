@@ -1,24 +1,25 @@
-class ImagePullPlaybook:
+class ContainerCreateErrorPlaybook:
 
     @staticmethod
     def get_context() -> str:
 
         return """
-You are handling an ImagePullBackOff incident.
+You are handling a CreateContainerError incident.
 
 Focus on:
 
-1. Invalid image names
-2. Invalid image tags
-3. Missing imagePullSecrets
-4. Private registry authentication failures
-5. Registry connectivity issues
+1. Invalid container commands
+2. Invalid entrypoints
+3. Missing files or directories
+4. Volume mount failures
+5. Permission issues
 
-Suggest Kubernetes-specific remediation steps.
+Prioritize Pod events and container configuration.
 
-Do not suggest application debugging because the container never started.
+Suggest correcting container configuration before restarting.
+
+Verify the container reaches the Running state.
 """
-
 
     @staticmethod
     def required_evidence():

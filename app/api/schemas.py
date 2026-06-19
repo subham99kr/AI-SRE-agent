@@ -92,3 +92,18 @@ class IncidentDetailsResponse(BaseModel):
     verification_success: bool
 
     verification_message: str
+
+
+class AttemptResponse(BaseModel):
+
+    id: str
+
+    attempt_number: int
+
+    status: str
+
+    approval_status: str
+
+    verification_success: bool
+
+    created_at: datetime

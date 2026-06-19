@@ -1,4 +1,6 @@
-from app.models.evidence import Evidence
+from app.models.evidence import (
+    Evidence
+)
 
 
 class IncidentClassifier:
@@ -8,42 +10,87 @@ class IncidentClassifier:
         evidence: Evidence
     ) -> str:
 
+        #
+        # Pod-based detection
+        #
+
         for pod in evidence.pods:
 
-            waiting_reason = (
-                pod.get("waiting_reason")
+            phase = pod.get(
+                "phase"
             )
 
-            restart_count = (
-                pod.get("restarts", 0)
+            waiting_reason = pod.get(
+                "waiting_reason"
             )
 
-            last_exit_code = (
-                pod.get("last_exit_code")
+            restart_count = pod.get(
+                "restarts",
+                0
             )
 
-            termination_reason = (
-                pod.get("termination_reason")
+            last_exit_code = pod.get(
+                "last_exit_code"
             )
 
-            if waiting_reason in [
+            termination_reason = pod.get(
+                "termination_reason"
+            )
+
+            #
+            # Image Pull
+            #
+
+            if waiting_reason in (
                 "ImagePullBackOff",
                 "ErrImagePull"
-            ]:
+            ):
 
                 return "IMAGE_PULL"
 
+            #
+            # Pending
+            #
+
+            if phase == "Pending":
+
+                return "PENDING"
+
+            #
+            # OOMKilled
+            #
+
+            if termination_reason == "OOMKilled":
+
+                return "OOM_KILLED"
+
+            #
+            # CrashLoop
+            #
+
             if (
+
                 waiting_reason == "CrashLoopBackOff"
+
                 or restart_count >= 3
+
                 or (
+
                     last_exit_code is not None
+
                     and last_exit_code != 0
+
                 )
+
                 or termination_reason == "Error"
+
             ):
 
                 return "CRASH_LOOP"
+
+        #
+        # Event-based detection
+        #
 
         for event in evidence.events:
 
@@ -52,27 +99,65 @@ class IncidentClassifier:
                 ""
             )
 
-            message = event.get(
-                "message",
-                ""
+            message = (
+                event.get(
+                    "message",
+                    ""
+                )
+                .lower()
             )
 
+            #
+            # Image Pull
+            #
+
             if (
-                reason in [
+
+                reason in (
                     "ErrImagePull",
                     "Failed"
-                ]
-                and (
-                    "pull image" in message.lower()
-                    or "imagepullbackoff" in message.lower()
-                    or "errimagepull" in message.lower()
                 )
+
+                and (
+
+                    "pull image" in message
+
+                    or "imagepullbackoff" in message
+
+                    or "errimagepull" in message
+
+                )
+
             ):
 
                 return "IMAGE_PULL"
 
+            #
+            # CrashLoop
+            #
+
             if reason == "BackOff":
 
                 return "CRASH_LOOP"
+
+            #
+            # Scheduling
+            #
+
+            if reason == "FailedScheduling":
+
+                return "UNSCHEDULABLE"
+
+            #
+            # Evicted
+            #
+
+            if reason == "Evicted":
+
+                return "EVICTED"
+
+        #
+        # Unknown
+        #
 
         return "UNKNOWN"

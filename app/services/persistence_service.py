@@ -54,12 +54,41 @@ class PersistenceService:
                 approval_reason=state["approval_reason"],
                 approved_by=None,
                 verification_success=False,
-                verification_message="Waiting for execution."
+                verification_message="Waiting for execution.",
+                # remediation_reasoning=state["remediation_reasoning"],
             )
 
             incident_repo.create(incident)
 
-            db.flush()      # <-- Generates UUID before commit
+            db.flush()
+
+            #
+            # First incident becomes its own root
+            #
+
+            #
+            # Root incident or retry
+            #
+
+            if state.get(
+                "root_incident_id"
+            ):
+
+                incident.root_incident_id = (
+                    state["root_incident_id"]
+                )
+
+                incident.attempt_number = (
+                    state["attempt_number"]
+                )
+
+            else:
+
+                incident.root_incident_id = (
+                    incident.id
+                )
+
+                incident.attempt_number = 1
 
             #
             # Save Evidence
@@ -84,6 +113,7 @@ class PersistenceService:
                     incident_id=incident.id,
                     risk=state["risk"],
                     rollback_available=state["rollback_available"],
+                    reasoning=state["remediation_reasoning"],
                     steps=state["remediation_steps"],
                 )
             )

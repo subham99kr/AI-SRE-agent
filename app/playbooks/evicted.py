@@ -1,24 +1,24 @@
-class NodeFailurePlaybook:
+class EvictedPlaybook:
 
     @staticmethod
     def get_context() -> str:
 
         return """
-You are handling a Node failure.
+You are handling an Evicted Pod incident.
 
 Focus on:
 
-1. Node readiness
-2. Node pressure conditions
-3. Kubelet failures
-4. Network partition
-5. Node resource exhaustion
+1. Node memory pressure
+2. Node disk pressure
+3. Ephemeral storage exhaustion
+4. Resource limits
+5. Node health
 
-Prioritize node status and events.
+Prioritize node conditions and eviction events.
 
-Avoid unnecessary workload changes if the issue is infrastructure related.
+Avoid restarting workloads without resolving node pressure.
 
-Verify the node returns to Ready status.
+Verify Pods are successfully rescheduled.
 """
 
     @staticmethod

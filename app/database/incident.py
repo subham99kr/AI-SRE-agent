@@ -7,8 +7,10 @@ from sqlalchemy import (
     Float,
     Boolean,
     DateTime,
+    Integer,
     func,
 )
+from typing import Optional
 
 from sqlalchemy.orm import (
     Mapped,
@@ -91,5 +93,36 @@ class Incident(Base):
         String(100),
         nullable=True
     )
+
+        #
+    # Retry Tracking
+    #
+
+    root_incident_id: Mapped[Optional[str]] = mapped_column(
+        String(36),
+        nullable=True,
+        index=True
+    )
+
+    attempt_number: Mapped[int] = mapped_column(
+        default=1
+    )
+
+    operator_feedback: Mapped[str | None] = mapped_column(
+        String(2000),
+        nullable=True
+    )
+
+    feedback_by: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
+    )
+
+    feedback_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+    
 
     # approved_at i will implement later

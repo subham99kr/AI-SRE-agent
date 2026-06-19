@@ -15,9 +15,6 @@ from app.agents.execution_agent import (
     ExecutionAgent
 )
 
-from app.agents.execution_agent import (
-    ExecutionAgent
-)
 
 from app.models.evidence import (
     Evidence
@@ -48,11 +45,14 @@ from app.agents.verification_agent import (
 )
 
 from app.agents.summarizer_agent import (
-    SummarizerAgent
+    SummarizerAgent,
 )
 
 from app.services.persistence_service import (
-    PersistenceService
+    PersistenceService,
+)
+from app.services.retry_memory_service import (
+    RetryMemoryService
 )
 
 
@@ -106,10 +106,19 @@ class InvestigationGraph:
             "persist",
             self.persist_node
         )
+        graph.add_node(
+            "load_previous_attempt",
+            self.load_previous_attempt
+        )
 
 
         graph.add_edge(
             START,
+            "load_previous_attempt"
+        )
+
+        graph.add_edge(
+            "load_previous_attempt",
             "collect_evidence"
         )
 
@@ -241,22 +250,32 @@ class InvestigationGraph:
         agent = RootCauseAgent()
 
         result = await agent.run(
+
             evidence_json=json.dumps(
                 state["evidence"],
                 indent=2
             ),
+
             incident_type=state[
                 "incident_type"
             ],
-            playbook_context=playbook_context
+
+            playbook_context=playbook_context,
+
+            previous_attempt_summary=
+            state.get(
+                "previous_attempt_summary",
+                ""
+            )
+
         )
 
         return {
             "root_cause":
             result["root_cause"],
 
-            "fix_plan":
-            result["fix_plan"],
+            # "fix_plan":
+            # result["fix_plan"],
 
             "confidence":
             result["confidence"]
@@ -276,13 +295,24 @@ class InvestigationGraph:
         agent = RemediationAgent()
 
         result = await agent.run(
-            root_cause=state["root_cause"],
-            incident_type=state["incident_type"],
+
+            root_cause=
+            state["root_cause"],
+
+            incident_type=
+            state["incident_type"],
 
             evidence_json=json.dumps(
                 state["evidence"],
                 indent=2
+            ),
+
+            previous_attempt_summary=
+            state.get(
+                "previous_attempt_summary",
+                ""
             )
+
         )
 
         return {
@@ -297,6 +327,12 @@ class InvestigationGraph:
 
             "rollback_available":
             result["rollback_available"],
+
+            "remediation_reasoning":
+            result.get(
+                "reasoning",
+                ""
+            ),
 
             "remediation_steps":
             result["steps"]
@@ -337,7 +373,7 @@ class InvestigationGraph:
 
         last_result = None
 
-        MAX_RETRIES = 6
+        MAX_RETRIES = 3
 
         WAIT_SECONDS = 5
 
@@ -509,6 +545,45 @@ class InvestigationGraph:
     ):
 
         return "persist"
+    
+    async def load_previous_attempt(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("LOAD PREVIOUS ATTEMPT")
+        print("=" * 80)
+
+        #
+        # Fresh investigation
+        #
+
+        if not state.get("retry", False):
+
+            print("Fresh investigation.")
+
+            return {}
+
+        #
+        # Retry
+        #
+
+        print("Retry investigation.")
+
+        summary = RetryMemoryService().load(
+            root_incident_id=state["root_incident_id"],
+            limit=5
+        )
+
+        print("=" * 80)
+        print("PREVIOUS ATTEMPT SUMMARY")
+        print(summary)
+        print("=" * 80)
+
+        return {
+            "previous_attempt_summary": summary
+        }
         
     # async def route_after_approval(
     #     self,

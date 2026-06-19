@@ -18,7 +18,8 @@ class RootCauseAgent:
         self,
         evidence_json: str,
         incident_type: str,
-        playbook_context: str
+        playbook_context: str,
+        previous_attempt_summary: str = ""
     ) -> dict:
 
         with open(
@@ -29,16 +30,39 @@ class RootCauseAgent:
 
             template = file.read()
 
+        history = previous_attempt_summary
+
+        if not history:
+
+            history = "NONE"
+
+        payload = f"""
+        Detected Incident Type
+
+        {incident_type}
+
+        ======================================
+
+        Playbook Guidance
+
+        {playbook_context}
+
+        ======================================
+
+        Current Kubernetes Evidence
+
+        {evidence_json}
+
+        ======================================
+
+        Previous Attempts
+
+        {history}
+        """
+
         prompt = template.replace(
             "<<INCIDENT>>",
-            (
-                f"\nDetected Incident Type:\n"
-                f"{incident_type}\n\n"
-                f"Playbook Guidance:\n\n"
-                f"{playbook_context}\n\n"
-                f"Evidence:\n"
-                f"{evidence_json}"
-            )
+            payload
         )
 
         print("=" * 80)

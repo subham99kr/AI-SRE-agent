@@ -112,3 +112,87 @@ class IncidentRepository(BaseRepository):
         )
 
         return incident
+    
+    def get_attempts(
+        self,
+        root_incident_id: str
+    ) -> list[Incident]:
+
+        statement = (
+
+            select(
+                Incident
+            )
+
+            .where(
+                Incident.root_incident_id
+                == root_incident_id
+            )
+
+            .order_by(
+                Incident.attempt_number
+            )
+
+        )
+
+        return list(
+            self.db.scalars(statement)
+        )
+    
+    def get_attempts_by_root(
+        self,
+        root_incident_id: str,
+        limit: int = 5
+    ) -> list[Incident]:
+
+        statement = (
+
+            select(
+                Incident
+            )
+
+            .where(
+                Incident.root_incident_id
+                == root_incident_id
+            )
+
+            .order_by(
+                Incident.attempt_number.asc()
+            )
+
+        )
+
+        incidents = list(
+            self.db.scalars(statement)
+        )
+        incidents.reverse()
+        return incidents
+    
+    def get_next_attempt_number(
+        self,
+        root_incident_id: str
+    ) -> int:
+
+        attempts = self.get_attempts(
+            root_incident_id
+        )
+
+        if not attempts:
+
+            return 1
+
+        return (
+            attempts[-1].attempt_number
+            + 1
+        )
+    
+    def reject(
+        self,
+        incident: Incident
+    ) -> Incident:
+
+        self.db.merge(
+            incident
+        )
+
+        return incident

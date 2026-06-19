@@ -7,6 +7,7 @@ from app.api.schemas import (
     IncidentRequest,
     IncidentResponse,
     ClusterIncidentRequest,
+    AttemptResponse
 )
 
 from app.workflows.investigation_graph import (
@@ -30,7 +31,15 @@ from app.workflows.execution_graph import (
 
 from app.api.schemas import (
     IncidentListItem,
-    IncidentDetailsResponse,
+)
+from app.services.retry_service import (
+    RetryService,
+)
+from app.services.retry_memory_service import (
+    RetryMemoryService
+)
+from app.models.reject_request import (
+    RejectRequest
 )
 
 
@@ -333,4 +342,182 @@ async def approve_incident(
         "report":
         result["incident_report"]
 
+    }
+
+@router.get(
+    "/incidents/{root_id}/attempts",
+    response_model=list[AttemptResponse]
+)
+async def get_attempts(
+    root_id: str
+):
+
+    attempts = (
+
+        IncidentService()
+
+        .get_attempts(
+            root_id
+        )
+
+    )
+
+    return attempts
+
+
+@router.post(
+    "/incidents/{incident_id}/retry",
+    response_model=IncidentResponse
+)
+async def retry_incident(
+    incident_id: str
+):
+
+    retry = (
+        RetryService()
+        .create_retry(
+            incident_id
+        )
+    )
+
+    if retry is None:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Incident not found."
+
+        )
+
+    graph = (
+        InvestigationGraph()
+        .build()
+    )
+
+    graph_result = await graph.ainvoke(
+
+        retry
+
+    )
+
+    return IncidentResponse(
+
+        root_cause=
+        graph_result["root_cause"],
+
+        confidence=
+        graph_result["confidence"],
+
+        risk=
+        graph_result["risk"],
+
+        status=
+        graph_result["status"],
+
+        approval_status=
+        graph_result["approval_status"],
+
+        approval_reason=
+        graph_result["approval_reason"],
+
+        requires_approval=
+        graph_result["requires_approval"],
+
+        rollback_available=
+        graph_result["rollback_available"],
+
+        remediation_steps=
+        graph_result["remediation_steps"],
+
+        verification_success=
+        graph_result.get(
+            "verification_success",
+            False
+        ),
+
+        verification_message=
+        graph_result.get(
+            "verification_message",
+            "Pending approval."
+        ),
+
+        verification_checks=
+        graph_result.get(
+            "verification_checks",
+            []
+        ),
+
+        incident_report=
+        graph_result.get(
+            "incident_report"
+        ),
+
+        incident_id=
+        graph_result["incident_id"]
+
+    )
+
+@router.post(
+    "/incidents/{incident_id}/reject"
+)
+async def reject_incident(
+    incident_id: str,
+    request: RejectRequest
+):
+
+    incident = (
+        IncidentService()
+        .reject_incident(
+            incident_id=incident_id,
+            feedback=request.feedback,
+            user=request.user
+        )
+    )
+
+    if incident is None:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Incident not found."
+        )
+
+    return {
+
+        "message":
+        "Incident rejected.",
+
+        "incident_id":
+        incident.id,
+
+        "status":
+        incident.status,
+
+        "approval_status":
+        incident.approval_status,
+
+        "feedback":
+        incident.operator_feedback,
+
+        "feedback_by":
+        incident.feedback_by
+
+    }
+
+@router.get(
+    "/incidents/{root_id}/memory"
+)
+async def get_retry_memory(
+    root_id: str
+):
+
+    summary = (
+        RetryMemoryService()
+        .load(
+            root_id
+        )
+    )
+
+    return {
+        "summary": summary
     }

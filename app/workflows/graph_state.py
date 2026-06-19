@@ -1,16 +1,53 @@
 from typing import TypedDict
+
 from app.models.report import (
     IncidentReport
 )
+
 
 class InvestigationState(
     TypedDict,
     total=False
 ):
 
+    #
+    # Incoming Request
+    #
+
     namespace: str
 
     deployment: str
+
+    #
+    # Retry Information
+    #
+
+    retry: bool
+
+    incident_id: str
+
+    root_incident_id: str
+
+    attempt_number: int
+
+    #
+    # Previous Attempt
+    #
+
+    # previous_root_cause: str
+
+    # previous_remediation_steps: list
+
+    # previous_execution_results: list
+
+    # previous_verification_message: str
+
+    # previous_operator_feedback: str
+
+    previous_attempt_summary: str
+    #
+    # Current Investigation
+    #
 
     evidence: dict
 
@@ -22,6 +59,10 @@ class InvestigationState(
 
     risk: str
 
+    #
+    # Approval
+    #
+
     status: str
 
     requires_approval: bool
@@ -30,11 +71,23 @@ class InvestigationState(
 
     approval_reason: str | None
 
+    operator_feedback: str | None
+
     rollback_available: bool
+
+    remediation_reasoning: str
 
     remediation_steps: list
 
+    #
+    # Execution
+    #
+
     execution_results: list
+
+    #
+    # Verification
+    #
 
     verification_success: bool
 
@@ -42,6 +95,8 @@ class InvestigationState(
 
     verification_checks: list[str]
 
-    incident_report: IncidentReport
+    #
+    # Report
+    #
 
-    incident_id: str | None
+    incident_report: IncidentReport

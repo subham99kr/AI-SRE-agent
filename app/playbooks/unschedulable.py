@@ -1,24 +1,25 @@
-class NodeFailurePlaybook:
+class UnschedulablePlaybook:
 
     @staticmethod
     def get_context() -> str:
 
         return """
-You are handling a Node failure.
+You are handling an Unschedulable Pod incident.
 
 Focus on:
 
-1. Node readiness
-2. Node pressure conditions
-3. Kubelet failures
-4. Network partition
-5. Node resource exhaustion
+1. Insufficient cluster resources
+2. Taints and tolerations
+3. Node affinity
+4. Pod affinity
+5. Resource requests
+6. Node availability
 
-Prioritize node status and events.
+Prioritize scheduler events.
 
-Avoid unnecessary workload changes if the issue is infrastructure related.
+Avoid deleting Pods.
 
-Verify the node returns to Ready status.
+Verify the scheduler successfully places the Pod on a node.
 """
 
     @staticmethod

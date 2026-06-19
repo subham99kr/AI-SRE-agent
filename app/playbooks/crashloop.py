@@ -20,3 +20,28 @@ Suggest Kubernetes-specific remediation steps.
 
 Do not suggest image pull fixes unless evidence supports it.
 """
+
+    @staticmethod
+    def required_evidence():
+
+        from app.models.evidence_types import (
+            EvidenceType
+        )
+
+        return [
+
+            EvidenceType.DEPLOYMENT,
+
+            EvidenceType.PODS,
+
+            EvidenceType.EVENTS,
+
+            EvidenceType.LOGS,
+
+            EvidenceType.POD_DESCRIPTION,
+
+            EvidenceType.CONFIGMAPS,
+
+            EvidenceType.SECRETS
+
+        ]

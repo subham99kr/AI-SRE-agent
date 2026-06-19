@@ -22,7 +22,9 @@ class RemediationAgent:
 
         incident_type: str,
 
-        evidence_json: str
+        evidence_json: str,
+
+        previous_attempt_summary: str = ""
 
     ) -> dict:
 
@@ -38,16 +40,35 @@ class RemediationAgent:
 
             template = file.read()
 
+        history = previous_attempt_summary
+
+        if not history:
+
+            history = "NONE"
+
         payload = f"""
-Incident Type:
-{incident_type}
+        Incident Type
 
-Root Cause:
-{root_cause}
+        {incident_type}
 
-Evidence:
-{evidence_json}
-"""
+        ======================================
+
+        Root Cause
+
+        {root_cause}
+
+        ======================================
+
+        Evidence
+
+        {evidence_json}
+
+        ======================================
+
+        Previous Attempts
+
+        {history}
+        """
 
         prompt = template.replace(
             "<<INPUT>>",
@@ -70,7 +91,11 @@ Evidence:
 
         try:
 
-            return json.loads(response)
+            result = json.loads(response)
+            ##### remove this after test################
+            
+
+            return result
 
         except Exception:
 
@@ -85,6 +110,9 @@ Evidence:
                 ),
 
                 "rollback_available": False,
+
+                "reasoning":
+                "The remediation response could not be parsed.",
 
                 "steps": [
 

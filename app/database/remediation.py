@@ -2,6 +2,7 @@ from sqlalchemy import (
     String,
     Boolean,
     ForeignKey,
+    Text
 )
 
 from sqlalchemy.dialects.postgresql import (
@@ -36,4 +37,8 @@ class Remediation(Base):
 
     steps: Mapped[list] = mapped_column(
         JSONB
+    )
+
+    reasoning: Mapped[str] = mapped_column(
+        Text
     )
