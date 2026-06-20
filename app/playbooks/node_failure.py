@@ -32,7 +32,7 @@ Verify the node returns to Ready status.
 
             EvidenceType.NODES,
 
-            EvidenceType.NODE_DESCRIPTION,
+            EvidenceType.NODE_REPORT,
 
             EvidenceType.PODS,
 

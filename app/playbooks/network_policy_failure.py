@@ -30,12 +30,12 @@ Verify Pod-to-Pod communication succeeds after remediation.
 
         return [
 
-            EvidenceType.NETWORK_POLICIES,
+            EvidenceType.NETWORK_POLICY_REPORT,
 
             EvidenceType.PODS,
 
             EvidenceType.EVENTS,
 
-            EvidenceType.SERVICES
+            EvidenceType.SERVICE_REPORT
 
         ]

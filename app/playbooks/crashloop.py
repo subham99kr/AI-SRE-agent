@@ -38,10 +38,10 @@ Do not suggest image pull fixes unless evidence supports it.
 
             EvidenceType.LOGS,
 
-            EvidenceType.POD_DESCRIPTION,
+            EvidenceType.POD_REPORT,
 
-            EvidenceType.CONFIGMAPS,
+            EvidenceType.CONFIGMAP_REPORT,
 
-            EvidenceType.SECRETS
+            EvidenceType.SECRET_REPORT
 
         ]

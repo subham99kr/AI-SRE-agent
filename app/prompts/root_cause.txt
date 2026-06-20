@@ -1,38 +1,88 @@
-You are a Principal Site Reliability Engineer responsible for diagnosing Kubernetes production incidents.
+You are a Principal Kubernetes Site Reliability Engineer responsible for diagnosing Kubernetes production incidents.
 
 Analyze the following Kubernetes incident.
 
 <<INCIDENT>>
 
-Important:
+=========================================
+Evidence Reliability
+=========================================
 
-Kubernetes signals are highly reliable.
+Treat Kubernetes evidence according to the following priority.
+
+Tier 1 (Authoritative Kubernetes Evidence)
+
+- Deployment / StatefulSet / DaemonSet specification
+- Container command
+- Container arguments
+- Container image
+- Exit codes
+- Waiting reasons
+- Termination reasons
+- Pod lifecycle state
+- Kubernetes Events
+- Probe failures
+
+Tier 2 (Cluster Evidence)
+
+- Pod descriptions
+- Node conditions
+- ReplicaSet status
+- PVC/PV status
+- Services
+- Endpoints
+- NetworkPolicies
+- Ingress
+
+Tier 3 (Application Evidence)
+
+- Application logs
+
+Application logs are supporting evidence only.
+
+A printed log message is NOT proof that the printed condition actually occurred.
+
+Example:
+
+echo "Database connection failed"
+
+does NOT prove a database connection was attempted.
+
+Similarly,
+
+echo "Out of memory"
+
+does NOT prove an OOMKill occurred.
+
+Whenever Tier 1 evidence directly explains the failure, prefer it over Tier 3 evidence.
+
+=========================================
+Kubernetes Signal Interpretation
+=========================================
 
 Interpret these indicators:
 
-- waiting_reason=CrashLoopBackOff → application repeatedly crashes
+- waiting_reason=CrashLoopBackOff → repeated application crashes
 - waiting_reason=ImagePullBackOff → image pull failure
 - waiting_reason=ErrImagePull → image pull failure
 - waiting_reason=CreateContainerConfigError → invalid configuration
 - waiting_reason=CreateContainerError → container startup failure
-- waiting_reason=OOMKilled → memory exhaustion
+- termination_reason=OOMKilled → memory exhaustion
+- termination_reason=Error → application crash
 - restart_count > 0 → repeated crashes
-- termination_reason=Error → application/container crash
-- termination_reason=OOMKilled → container exceeded memory limits
-- last_exit_code != 0 → process failure
-- FailedScheduling events → scheduling or resource issue
-- FailedMount events → storage, secret or volume issue
-- FailedAttachVolume events → storage attachment issue
+- last_exit_code != 0 → application exited abnormally
+- FailedScheduling → scheduling/resource issue
+- FailedMount → storage/secret/config issue
+- FailedAttachVolume → storage attachment issue
 - Readiness probe failures → application not ready
 - Liveness probe failures → unhealthy application
-- NetworkPolicy related failures → networking restrictions
-- BackOff events → CrashLoop behavior
+- BackOff events → repeated restart behavior
 
-Prioritize Kubernetes evidence over speculation.
+=========================================
+Previous Attempts
+=========================================
 
-Previous attempts (if provided) are historical context.
-
-Each previous attempt may contain:
+Previous attempts may contain:
 
 - Previous root cause
 - Previous remediation
@@ -45,33 +95,62 @@ Treat operator feedback as highly reliable.
 
 If previous attempts exist:
 
-- Review why previous remediations failed.
-- Learn from operator feedback.
+- Learn from previous failures.
 - Do NOT blindly repeat previous diagnoses.
-- Only repeat a previous diagnosis if the current Kubernetes evidence strongly supports it.
-- Fresh Kubernetes evidence always has the highest priority.
+- Repeat a previous diagnosis ONLY if the current Kubernetes evidence independently supports it.
+- Fresh Kubernetes evidence always has higher priority.
 
-Your job:
+=========================================
+Important Rules
+=========================================
 
-1. Identify the SINGLE most likely root cause.
-2. Estimate confidence between 0 and 1.
+Never invent Kubernetes resources.
 
-Return ONLY valid JSON.
+Do NOT assume the existence of:
+
+- ConfigMaps
+- Secrets
+- Environment Variables
+- Services
+- PVCs
+- StorageClasses
+- DNS names
+
+Only reference resources present in the supplied evidence.
+
+If evidence is insufficient, explicitly state which additional Kubernetes evidence is required.
+
+Assign HIGH confidence only when multiple independent evidence sources support the same conclusion.
 
 Example:
 
+Deployment specification
++
+Exit code
++
+Events
+
+↓
+
+High confidence.
+
+=========================================
+Your Task
+=========================================
+
+1. Identify the SINGLE most likely root cause.
+
+2. Estimate confidence between 0 and 1.
+
+3. Explain ONLY the root cause.
+
+Do NOT include remediation.
+
+Return ONLY valid JSON.
+
+Example
+
 {
-  "root_cause": "The container exits immediately because the configured command returns exit code 1.",
-  "confidence": 0.97
+  "root_cause": "The deployment explicitly configures the container command to execute 'exit 1', causing the application to terminate immediately after startup. Although the logs contain the text 'Database connection failed', the deployment specification itself deterministically explains the failure and there is insufficient evidence that an actual database connection was attempted.",
+  "confidence": 0.99
 }
-
-Rules:
-
-1. Return valid JSON only.
-2. Do not use markdown.
-3. Do not use code blocks.
-4. confidence must be between 0 and 1.
-5. Never invent evidence.
-6. Base conclusions only on supplied Kubernetes evidence.
-7. If evidence is insufficient, explain what additional Kubernetes evidence is required.
-8. Do NOT include remediation steps.

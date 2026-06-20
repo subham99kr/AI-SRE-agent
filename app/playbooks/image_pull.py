@@ -35,6 +35,6 @@ Do not suggest application debugging because the container never started.
 
             EvidenceType.EVENTS,
 
-            EvidenceType.POD_DESCRIPTION
+            EvidenceType.POD_REPORT
 
         ]

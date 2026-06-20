@@ -32,8 +32,8 @@ Verify external traffic successfully reaches the application.
 
             EvidenceType.INGRESS,
 
-            EvidenceType.SERVICES,
+            EvidenceType.SERVICE_REPORT,
 
-            EvidenceType.ENDPOINTS
+            EvidenceType.ENDPOINT_REPORT
 
         ]

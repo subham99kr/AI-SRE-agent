@@ -36,9 +36,9 @@ Verify that the container starts successfully after configuration changes.
 
             EvidenceType.EVENTS,
 
-            EvidenceType.CONFIGMAPS,
+            EvidenceType.CONFIGMAP_REPORT,
 
-            EvidenceType.SECRETS,
+            EvidenceType.SECRET_REPORT,
 
             EvidenceType.POD_DESCRIPTION
 

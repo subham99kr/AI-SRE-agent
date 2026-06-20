@@ -1,78 +1,49 @@
+from enum import StrEnum
+
+
 class EvidenceType(StrEnum):
 
     #
-    # Workloads
+    # Initial Investigation
     #
 
     DEPLOYMENT = "deployment"
 
-    DEPLOYMENTS = "deployments"
-
     PODS = "pods"
-
-    POD_DESCRIPTION = "pod_description"
 
     EVENTS = "events"
 
+    #
+    # Adaptive Investigation
+    #
+
     LOGS = "logs"
 
-    REPLICASETS = "replicasets"
+    POD_REPORT = "pod_report"
 
-    STATEFULSETS = "statefulsets"
+    NODE_REPORT = "node_report"
 
-    DAEMONSETS = "daemonsets"
+    PVC_REPORT = "pvc_report"
 
-    JOBS = "jobs"
+    PV_REPORT = "pv_report"
 
-    CRONJOBS = "cronjobs"
+    STORAGE_CLASS_REPORT = "storage_class_report"
 
-    #
-    # Networking
-    #
+    SERVICE_REPORT = "service_report"
 
-    SERVICES = "services"
+    ENDPOINT_REPORT = "endpoint_report"
 
-    ENDPOINTS = "endpoints"
+    CONFIGMAP_REPORT = "configmap_report"
 
-    INGRESS = "ingress"
+    SECRET_REPORT = "secret_report"
 
-    NETWORK_POLICIES = "network_policies"
+    REPLICASET_REPORT = "replicaset_report"
 
-    DNS = "dns"
+    STATEFULSET_REPORT = "statefulset_report"
 
-    #
-    # Storage
-    #
+    NETWORK_POLICY_REPORT = "network_policy_report"
 
-    PVCS = "pvcs"
-
-    PVS = "pvs"
-
-    STORAGE_CLASSES = "storage_classes"
-
-    #
-    # Configuration
-    #
-
-    CONFIGMAPS = "configmaps"
-
-    SECRETS = "secrets"
-
-    #
-    # Cluster
-    #
-
-    NODES = "nodes"
-
-    NODE_DESCRIPTION = "node_description"
-
-    NAMESPACES = "namespaces"
-
-    HPA = "horizontal_pod_autoscaler"
-
-    #
-    # Observability
-    #
+    INGRESS_REPORT = "ingress_report"
 
     METRICS = "metrics"
 

@@ -30,9 +30,9 @@ Verify traffic reaches healthy Pods.
 
         return [
 
-            EvidenceType.SERVICES,
+            EvidenceType.SERVICE_REPORT,
 
-            EvidenceType.ENDPOINTS,
+            EvidenceType.ENDPOINT_REPORT,
 
             EvidenceType.PODS,
 

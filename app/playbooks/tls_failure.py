@@ -30,10 +30,10 @@ Verify secure connections are successfully established.
 
         return [
 
-            EvidenceType.INGRESS,
+            EvidenceType.INGRESS_REPORT,
 
-            EvidenceType.SECRETS,
+            EvidenceType.SECRET_REPORT,
             
-            EvidenceType.SERVICES,
+            EvidenceType.SERVICE_REPORT,
 
         ]

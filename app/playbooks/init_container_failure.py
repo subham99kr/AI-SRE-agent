@@ -36,6 +36,6 @@ Verify all init containers complete successfully.
 
             EvidenceType.LOGS,
 
-            EvidenceType.POD_DESCRIPTION
+            EvidenceType.POD_REPORT
 
         ]

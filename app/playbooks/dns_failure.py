@@ -30,9 +30,9 @@ Verify DNS resolution succeeds after remediation.
 
         return [
 
-            EvidenceType.SERVICES,
+            EvidenceType.SERVICE_REPORT,
 
-            EvidenceType.ENDPOINTS,
+            EvidenceType.ENDPOINT_REPORT,
 
             EvidenceType.PODS,
 

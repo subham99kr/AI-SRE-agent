@@ -30,7 +30,7 @@ Prefer Kubernetes-native remediation.
 
 Avoid deleting StatefulSets or PersistentVolumeClaims unless absolutely necessary.
 
-Verify that all StatefulSet replicas become Ready and that PVCs are successfully Bound.
+Verify that all StatefulSet replicas become Ready and that PVC_REPORT are successfully Bound.
 """
 
     @staticmethod
@@ -38,17 +38,17 @@ Verify that all StatefulSet replicas become Ready and that PVCs are successfully
 
         return [
 
-            EvidenceType.STATEFULSETS,
+            EvidenceType.STATEFULSET_REPORT,
 
             EvidenceType.PODS,
 
             EvidenceType.EVENTS,
 
-            EvidenceType.POD_DESCRIPTION,
+            EvidenceType.POD_REPORT,
 
-            EvidenceType.PVCS,
+            EvidenceType.PVC_REPORT,
 
-            EvidenceType.PVS,
+            EvidenceType.PV_REPORT,
 
             EvidenceType.STORAGE_CLASSES,
 

@@ -40,12 +40,12 @@ Verify that the Pod transitions from Pending to Running after remediation.
 
             EvidenceType.EVENTS,
 
-            EvidenceType.POD_DESCRIPTION,
+            EvidenceType.POD_REPORT,
 
             EvidenceType.NODES,
 
-            EvidenceType.NODE_DESCRIPTION,
+            EvidenceType.NODE_REPORT,
 
-            EvidenceType.PVCS
+            EvidenceType.PVC_REPORT
 
         ]

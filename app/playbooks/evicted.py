@@ -32,7 +32,7 @@ Verify Pods are successfully rescheduled.
 
             EvidenceType.NODES,
 
-            EvidenceType.NODE_DESCRIPTION,
+            EvidenceType.NODE_REPORT,
 
             EvidenceType.PODS,
 

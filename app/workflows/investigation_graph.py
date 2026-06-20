@@ -54,7 +54,13 @@ from app.services.persistence_service import (
 from app.services.retry_memory_service import (
     RetryMemoryService
 )
+from app.services.evidence_collector import (
+    EvidenceCollector
+)
 
+from app.services.evidence_formatter import (
+    EvidenceFormatter
+)
 
 
 class InvestigationGraph:
@@ -73,6 +79,15 @@ class InvestigationGraph:
         graph.add_node(
             "classify_incident",
             self.classify_incident
+        )
+        graph.add_node(
+            "collect_adaptive_evidence",
+            self.collect_adaptive_evidence
+        )
+
+        graph.add_node(
+            "format_evidence",
+            self.format_evidence
         )
 
         graph.add_node(
@@ -129,6 +144,16 @@ class InvestigationGraph:
 
         graph.add_edge(
             "classify_incident",
+            "collect_adaptive_evidence"
+        )
+
+        graph.add_edge(
+            "collect_adaptive_evidence",
+            "format_evidence"
+        )
+
+        graph.add_edge(
+            "format_evidence",
             "analyze_root_cause"
         )
 
@@ -180,7 +205,7 @@ class InvestigationGraph:
         builder = EvidenceBuilder()
 
         evidence = (
-            builder.build_incident_context(
+            builder.build_initial_context(
                 namespace=state["namespace"],
                 deployment=state["deployment"]
             )
@@ -217,6 +242,111 @@ class InvestigationGraph:
         return {
             "incident_type":
             incident_type
+        }
+    
+
+    async def collect_adaptive_evidence(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("COLLECT ADAPTIVE EVIDENCE")
+        print("=" * 80)
+
+        evidence = Evidence(
+            **state["evidence"]
+        )
+
+        playbook = (
+            PlaybookFactory.get_playbook(
+                state["incident_type"]
+            )
+        )
+
+        if playbook is None:
+
+            return {}
+
+        collector = EvidenceCollector()
+
+        collector.collect(
+
+            evidence,
+
+            playbook.required_evidence()
+
+        )
+        print("=" * 80)
+        print("REPORTS")
+        print(evidence.reports.keys())
+        print("=" * 80)
+
+        print("=" * 80)
+        print("LOG COUNT")
+        print(len(evidence.logs))
+        print("=" * 80)
+
+        return {
+
+            "evidence":
+            evidence.model_dump()
+
+        }
+    
+    async def format_evidence(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("FORMAT EVIDENCE")
+        print("=" * 80)
+
+        evidence = Evidence(
+            **state["evidence"]
+        )
+
+        formatted = (
+
+            EvidenceFormatter.format(
+                evidence
+            )
+
+        )
+
+        return {
+
+            "formatted_evidence":
+            formatted
+
+        }
+    async def format_evidence(
+        self,
+        state: InvestigationState
+    ):
+
+        print("=" * 80)
+        print("FORMAT EVIDENCE")
+        print("=" * 80)
+
+        evidence = Evidence(
+            **state["evidence"]
+        )
+
+        formatted = (
+
+            EvidenceFormatter.format(
+                evidence
+            )
+
+        )
+
+        return {
+
+            "formatted_evidence":
+            formatted
+
         }
 
     async def analyze_root_cause(

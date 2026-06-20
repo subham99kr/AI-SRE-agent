@@ -34,9 +34,9 @@ Verify volumes are successfully mounted.
 
             EvidenceType.EVENTS,
 
-            EvidenceType.PVCS,
+            EvidenceType.PVC_REPORT,
 
-            EvidenceType.PVS,
+            EvidenceType.PV_REPORT,
 
             EvidenceType.STORAGE_CLASSES
 

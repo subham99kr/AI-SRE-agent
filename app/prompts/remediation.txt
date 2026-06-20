@@ -10,9 +10,38 @@ Inputs:
 
 <<INPUT>>
 
-Previous attempts may be included.
+=========================================
+Evidence-Based Remediation
+=========================================
 
-Each previous attempt may contain:
+Every remediation MUST be directly supported by the supplied Kubernetes evidence.
+
+Never modify Kubernetes resources based on assumptions.
+
+Do NOT invent:
+
+- Secrets
+- ConfigMaps
+- Environment Variables
+- Services
+- PVCs
+- Database hosts
+- Image names
+- Image tags
+
+Only reference Kubernetes resources present in the supplied evidence.
+
+If the supplied evidence is insufficient to safely modify resources, recommend collecting additional evidence first.
+
+Prefer investigation over modification whenever uncertainty exists.
+
+If the Deployment specification itself contains a deterministic failure (for example an invalid command, invalid arguments, invalid image or invalid probe configuration), prioritize fixing that before relying on application log messages.
+
+=========================================
+Previous Attempts
+=========================================
+
+Previous attempts may contain:
 
 - Root cause
 - Previous remediation
@@ -21,55 +50,46 @@ Each previous attempt may contain:
 - Operator feedback
 - Lessons learned
 
+Treat operator feedback as highly reliable.
+
 If previous attempts exist:
 
 - Learn from previous failures.
-- Treat operator feedback as highly reliable.
-- Do NOT blindly repeat previous failed remediations.
-- Only recommend the same remediation if the new Kubernetes evidence strongly supports it.
-- Explain why the new remediation is preferable whenever previous attempts failed.
+- Never blindly repeat rejected remediations.
+- Explain why the new remediation is preferable.
 
-Requirements:
+=========================================
+Requirements
+=========================================
 
 1. Prefer Kubernetes-native remediation.
 
-2. Suggest kubectl commands whenever appropriate.
+2. Prefer the least risky remediation.
 
-3. Never suggest deleting namespaces.
+3. Prefer investigation before modification when evidence is incomplete.
 
-4. Prefer rolling updates over deleting Pods.
+4. Prefer high-level kubectl commands whenever possible.
 
-5. Include rollout verification commands.
+Examples:
 
-Estimate operational risk using these guidelines:
+- kubectl rollout restart deployment/app
+- kubectl set image deployment/app app=image:tag
+- kubectl scale deployment/app --replicas=3
 
-LOW:
-- Viewing logs
-- Describing resources
-- Listing Kubernetes resources
-- Reading deployment configuration
+Only use kubectl patch when no safer alternative exists.
 
-MEDIUM:
-- Rolling restart
-- Updating deployment images
-- Scaling replicas
-- Updating ConfigMaps
-- Restarting workloads
+5. Never generate destructive commands unless absolutely necessary.
 
-HIGH:
-- Patching deployments
-- Changing container commands
-- Modifying Secrets
-- Modifying PersistentVolumeClaims
-- Changing networking
-- Updating StatefulSets
-- Database operations
+Never generate:
 
-6. Indicate whether rollback is possible.
+- kubectl delete namespace
+- kubectl delete deployment
+- kubectl delete pod
+- kubectl replace --force
 
-7. Every kubectl_command must be executable directly using shlex.split(command) followed by subprocess.run(...).
+6. Every kubectl_command must execute correctly using shlex.split(command) followed by subprocess.run(...).
 
-8. Do NOT generate commands containing shell operators or shell syntax including:
+7. Do NOT generate shell syntax:
 
 - >
 - >>
@@ -81,29 +101,12 @@ HIGH:
 - $
 - `
 - $(...)
-- Environment variable expansion
 
-9. Do NOT generate shell scripts.
+8. Commands must not require bash or sh.
 
-10. Do NOT redirect output to files.
+9. JSON arguments supplied to kubectl (such as --patch) MUST be passed as a SINGLE argument.
 
-11. If reviewing or backing up resources is recommended, mention it only in the description. The kubectl_command must remain a single executable kubectl command.
-
-Correct:
-
-Description:
-Review the deployment before making changes.
-
-kubectl_command:
-kubectl get deployment broken-app -n default -o yaml
-
-Incorrect:
-
-kubectl get deployment broken-app -o yaml > backup.yaml
-
-12. Commands must be executable without requiring bash or sh.
-
-13. When using kubectl patch, wrap the JSON payload in single quotes.
+Always wrap the JSON payload in single quotes.
 
 Correct:
 
@@ -113,59 +116,47 @@ Incorrect:
 
 kubectl patch deployment app -n default --patch {"spec":{"replicas":2}}
 
-14. Prefer high-level kubectl commands whenever Kubernetes provides an equivalent.
+10. Every remediation should finish with verification commands.
 
-Examples:
+Include, when appropriate:
 
-- kubectl set image deployment/app app=nginx:latest
-- kubectl rollout restart deployment/app
-- kubectl scale deployment/app --replicas=3
+- kubectl rollout status deployment/<deployment> -n <namespace>
+- kubectl get pods -n <namespace>
+- kubectl logs <pod-name> -n <namespace>
+- kubectl describe pod <pod-name> -n <namespace>
 
-Use kubectl patch only when no simpler command exists.
-
-15. Never generate destructive commands unless absolutely required.
-
-Do NOT generate commands such as:
-
-- kubectl delete namespace
-- kubectl delete deployment
-- kubectl delete pod
-- kubectl replace --force
-
-16. risk must be exactly one of:
+11. Risk must be exactly one of:
 
 - LOW
 - MEDIUM
 - HIGH
 
-17. Prefer the safest remediation that resolves the incident.
+12. Indicate whether rollback is possible.
 
-18. Every remediation plan should end with verification commands whenever appropriate, including:
+13. Explain why this remediation is preferred over previous failed remediations.
 
-- kubectl rollout status deployment/<deployment> -n <namespace>
-- kubectl get pods -n <namespace>
-- kubectl describe pod <pod-name> -n <namespace>
-
-19. Explain why this remediation is preferred over previous failed remediations whenever previous attempts are available.
+=========================================
+Return
+=========================================
 
 Return ONLY valid JSON.
 
-Example:
+Example
 
 {
   "risk": "HIGH",
   "requires_approval": true,
   "approval_reason": "Changing the deployment specification requires human approval.",
   "rollback_available": true,
-  "reasoning": "The previous remediation modified the container command but verification still failed. The new evidence indicates the image entrypoint is incorrect, making this remediation more appropriate.",
+  "reasoning": "The Deployment specification explicitly configures the container to execute 'exit 1'. This deterministic configuration error explains the CrashLoopBackOff. Previous logs contain the message 'Database connection failed', but there is insufficient evidence that a real database connection was attempted. Therefore correcting the deployment command is safer than modifying environment variables or Secrets.",
   "steps": [
     {
-      "description": "Review the current deployment configuration.",
+      "description": "Review the deployment specification.",
       "kubectl_command": "kubectl get deployment app -n default -o yaml"
     },
     {
-      "description": "Update the deployment image.",
-      "kubectl_command": "kubectl set image deployment/app app=nginx:latest"
+      "description": "Correct the deployment command.",
+      "kubectl_command": "kubectl patch deployment app -n default --patch '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"app\",\"command\":[\"sleep\",\"3600\"]}]}}}}'"
     },
     {
       "description": "Verify rollout completion.",

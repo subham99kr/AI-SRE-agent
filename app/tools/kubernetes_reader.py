@@ -241,3 +241,147 @@ class KubernetesTool:
             )
 
         return result
+        
+    def get_pod(
+        self,
+        pod_name: str,
+        namespace: str = "default"
+    ):
+
+        return self.core_api.read_namespaced_pod(
+            name=pod_name,
+            namespace=namespace
+        )
+    
+
+    def get_pod(
+        self,
+        pod_name: str,
+        namespace: str = "default"
+    ):
+
+        return self.core_api.read_namespaced_pod(
+            name=pod_name,
+            namespace=namespace
+        )
+
+    def get_node(
+        self,
+        node_name: str
+    ):
+
+        return self.core_api.read_node(
+            name=node_name
+        )
+
+    def get_service(
+        self,
+        service_name: str,
+        namespace: str = "default"
+    ):
+
+        return self.core_api.read_namespaced_service(
+            name=service_name,
+            namespace=namespace
+        )
+
+    def get_endpoints(
+        self,
+        service_name: str,
+        namespace: str = "default"
+    ):
+
+        return self.core_api.read_namespaced_endpoints(
+            name=service_name,
+            namespace=namespace
+        )
+
+    def get_pvc(
+        self,
+        pvc_name: str,
+        namespace: str = "default"
+    ):
+
+        return self.core_api.read_namespaced_persistent_volume_claim(
+            name=pvc_name,
+            namespace=namespace
+        )
+
+    def get_pv(
+        self,
+        pv_name: str
+    ):
+
+        return self.core_api.read_persistent_volume(
+            name=pv_name
+        )
+
+    def get_configmap(
+        self,
+        configmap_name: str,
+        namespace: str = "default"
+    ):
+
+        return self.core_api.read_namespaced_config_map(
+            name=configmap_name,
+            namespace=namespace
+        )
+
+    def get_secret(
+        self,
+        secret_name: str,
+        namespace: str = "default"
+    ):
+
+        return self.core_api.read_namespaced_secret(
+            name=secret_name,
+            namespace=namespace
+        )
+
+    def get_ingress(
+        self,
+        ingress_name: str,
+        namespace: str = "default"
+    ):
+
+        networking = client.NetworkingV1Api()
+
+        return networking.read_namespaced_ingress(
+            name=ingress_name,
+            namespace=namespace
+        )
+
+    def get_network_policy(
+        self,
+        policy_name: str,
+        namespace: str = "default"
+    ):
+
+        networking = client.NetworkingV1Api()
+
+        return networking.read_namespaced_network_policy(
+            name=policy_name,
+            namespace=namespace
+        )
+
+    def get_statefulset(
+        self,
+        name: str,
+        namespace: str = "default"
+    ):
+
+        return self.apps_api.read_namespaced_stateful_set(
+            name=name,
+            namespace=namespace
+        )
+
+    def get_replicaset(
+        self,
+        name: str,
+        namespace: str = "default"
+    ):
+
+        return self.apps_api.read_namespaced_replica_set(
+            name=name,
+            namespace=namespace
+        )

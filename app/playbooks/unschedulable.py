@@ -33,7 +33,7 @@ Verify the scheduler successfully places the Pod on a node.
 
             EvidenceType.NODES,
 
-            EvidenceType.NODE_DESCRIPTION,
+            EvidenceType.NODE_REPORT,
 
             EvidenceType.PODS,
 

@@ -32,7 +32,7 @@ Verify that the deployment becomes Available after remediation.
 
             EvidenceType.DEPLOYMENT,
 
-            EvidenceType.REPLICASETS,
+            EvidenceType.REPLICASET_REPORT,
 
             EvidenceType.PODS,
 

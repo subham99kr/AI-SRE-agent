@@ -36,6 +36,6 @@ Verify the container reaches the Running state.
 
             EvidenceType.EVENTS,
 
-            EvidenceType.POD_DESCRIPTION
+            EvidenceType.POD_REPORT
 
         ]

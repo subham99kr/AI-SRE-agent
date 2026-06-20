@@ -1,6 +1,5 @@
 import shlex
 import subprocess
-import json
 
 from app.models.execution import (
     CommandResult
@@ -55,6 +54,20 @@ class KubectlTool:
 
         return self.run(command)
 
+    def rollout_restart(
+        self,
+        deployment: str,
+        namespace: str
+    ) -> CommandResult:
+
+        command = (
+            f"kubectl rollout restart "
+            f"deployment/{deployment} "
+            f"-n {namespace}"
+        )
+
+        return self.run(command)
+
     def rollout_undo(
         self,
         deployment: str,
@@ -91,6 +104,38 @@ class KubectlTool:
 
         return self.run(command)
 
+    def patch(
+        self,
+        resource: str,
+        name: str,
+        patch: str,
+        namespace: str
+    ) -> CommandResult:
+
+        command = (
+            f"kubectl patch {resource} {name} "
+            f"-n {namespace} "
+            f"-p '{patch}'"
+        )
+
+        return self.run(command)
+
+    def scale(
+        self,
+        deployment: str,
+        replicas: int,
+        namespace: str
+    ) -> CommandResult:
+
+        command = (
+            f"kubectl scale deployment "
+            f"{deployment} "
+            f"--replicas={replicas} "
+            f"-n {namespace}"
+        )
+
+        return self.run(command)
+
     def get_pods(
         self,
         namespace: str
@@ -98,20 +143,6 @@ class KubectlTool:
 
         command = (
             f"kubectl get pods "
-            f"-n {namespace}"
-        )
-
-        return self.run(command)
-
-    def describe_pod(
-        self,
-        pod_name: str,
-        namespace: str
-    ) -> CommandResult:
-
-        command = (
-            f"kubectl describe pod "
-            f"{pod_name} "
             f"-n {namespace}"
         )
 
@@ -144,47 +175,3 @@ class KubectlTool:
         )
 
         return self.run(command)
-    
-    def get_pods_json(
-        self,
-        namespace: str
-    ):
-
-        result = self.run(
-
-            f"kubectl get pods "
-            f"-n {namespace} "
-            f"-o json"
-
-        )
-
-        if not result.success:
-
-            return None
-
-        return json.loads(
-            result.stdout
-        )
-        
-    def get_deployment_json(
-        self,
-        deployment: str,
-        namespace: str
-    ):
-
-        result = self.run(
-
-            f"kubectl get deployment "
-            f"{deployment} "
-            f"-n {namespace} "
-            f"-o json"
-
-        )
-
-        if not result.success:
-
-            return None
-
-        return json.loads(
-            result.stdout
-        )

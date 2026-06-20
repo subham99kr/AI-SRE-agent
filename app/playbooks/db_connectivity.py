@@ -44,12 +44,12 @@ Verify that the application successfully reconnects to the database after remedi
 
             EvidenceType.EVENTS,
 
-            EvidenceType.SERVICES,
+            EvidenceType.SERVICE_REPORT,
 
-            EvidenceType.ENDPOINTS,
+            EvidenceType.ENDPOINT_REPORT,
 
-            EvidenceType.CONFIGMAPS,
+            EvidenceType.CONFIGMAP_REPORT,
 
-            EvidenceType.SECRETS
+            EvidenceType.SECRET_REPORT
 
         ]

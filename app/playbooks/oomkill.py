@@ -40,6 +40,6 @@ Verify the container no longer terminates with OOMKilled.
 
             EvidenceType.LOGS,
 
-            EvidenceType.POD_DESCRIPTION
+            EvidenceType.POD_REPORT
 
         ]
