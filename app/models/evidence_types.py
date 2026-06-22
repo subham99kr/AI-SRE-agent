@@ -45,8 +45,10 @@ class EvidenceType(StrEnum):
 
     INGRESS_REPORT = "ingress_report"
 
-    METRICS = "metrics"
+    #
+    # Observability
+    #
 
-    PROMETHEUS = "prometheus"
+    PROMETHEUS_METRICS = "prometheus_metrics"
 
-    GRAFANA = "grafana"
+    GRAFANA_DASHBOARD = "grafana_dashboard"

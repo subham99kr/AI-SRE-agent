@@ -11,12 +11,17 @@ from app.tools.kubernetes_reader import (
     KubernetesTool
 )
 
+from app.tools.prometheus_reader import (
+    PrometheusTool
+)
+
 
 class EvidenceCollector:
 
     def __init__(self):
 
         self.k8s = KubernetesTool()
+        self.prometheus = PrometheusTool()
 
         self.collectors = {
 
@@ -24,7 +29,10 @@ class EvidenceCollector:
                 self._collect_logs,
 
             EvidenceType.POD_REPORT:
-                self._collect_pod_reports
+                self._collect_pod_reports,
+
+            EvidenceType.PROMETHEUS_METRICS:
+                self._collect_prometheus_metrics
 
         }
 
@@ -419,3 +427,229 @@ class EvidenceCollector:
                 "\n".join(report)
 
             )
+
+####################################################################
+#
+# Prometheus Metrics
+#
+####################################################################
+
+    def _collect_prometheus_metrics(
+        self,
+        evidence: Evidence
+    ):
+
+        if evidence.metrics:
+            return
+
+        metrics = {
+
+            "cpu": {},
+
+            "memory": {},
+
+            "request_count": {},
+
+            "request_rate": {},
+
+            "error_rate": {},
+
+            "latency_average": {},
+
+            "latency_p95": None
+
+        }
+
+        ############################################################
+        # CPU
+        ############################################################
+
+        try:
+
+            for item in self.prometheus.cpu_usage(
+                evidence.namespace
+            ):
+
+                metrics["cpu"][
+                    item["metric"]["pod"]
+                ] = float(
+                    item["value"][1]
+                )
+
+        except Exception as e:
+
+            metrics["cpu_error"] = str(e)
+
+        ############################################################
+        # Memory
+        ############################################################
+
+        try:
+
+            for item in self.prometheus.memory_usage(
+                evidence.namespace
+            ):
+
+                metrics["memory"][
+                    item["metric"]["pod"]
+                ] = int(
+                    float(
+                        item["value"][1]
+                    )
+                )
+
+        except Exception as e:
+
+            metrics["memory_error"] = str(e)
+
+        ############################################################
+        # Restart Count
+        ############################################################
+
+        try:
+
+            for item in self.prometheus.restart_count(
+                evidence.namespace
+            ):
+
+                metrics["restarts"][
+                    item["metric"]["pod"]
+                ] = int(
+                    float(
+                        item["value"][1]
+                    )
+                )
+
+        except Exception as e:
+
+            metrics["restart_error"] = str(e)
+
+        ############################################################
+        # Request Rate
+        ############################################################
+
+        try:
+
+            for item in self.prometheus.request_rate(
+                evidence.deployment
+            ):
+
+                handler = item["metric"].get(
+                    "handler",
+                    "unknown"
+                )
+
+                metrics["request_rate"][
+                    handler
+                ] = float(
+                    item["value"][1]
+                )
+
+        except Exception as e:
+
+            metrics["request_rate_error"] = str(e)
+
+        ############################################################
+        # Request Count
+        ############################################################
+
+        try:
+
+            requests = self.prometheus.request_count(
+                evidence.deployment
+            )
+
+            for item in requests:
+
+                handler = item["metric"].get(
+                    "handler",
+                    "unknown"
+                )
+
+                metrics["request_count"][
+                    handler
+                ] = int(
+                    float(
+                        item["value"][1]
+                    )
+                )
+
+        except Exception as e:
+
+            metrics["request_count_error"] = str(e)
+
+        ############################################################
+        # Error Rate
+        ############################################################
+
+        try:
+
+            errors = self.prometheus.error_rate(
+                evidence.deployment
+            )
+
+            for item in errors:
+
+                handler = item["metric"].get(
+                    "handler",
+                    "unknown"
+                )
+
+                metrics["error_rate"][
+                    handler
+                ] = float(
+                    item["value"][1]
+                )
+
+        except Exception as e:
+
+            metrics["error_rate_error"] = str(e)
+
+        ############################################################
+        # Average Latency
+        ############################################################
+
+        try:
+
+            latency = self.prometheus.latency_average(
+                evidence.deployment
+            )
+
+            for item in latency:
+
+                handler = item["metric"].get(
+                    "handler",
+                    "unknown"
+                )
+
+                metrics["latency_average"][
+                    handler
+                ] = float(
+                    item["value"][1]
+                )
+
+        except Exception as e:
+
+            metrics["latency_average_error"] = str(e)
+
+        ############################################################
+        # P95 Latency
+        ############################################################
+
+        try:
+
+            latency = self.prometheus.latency_p95(
+                evidence.deployment
+            )
+
+            if latency:
+
+                metrics["latency_p95"] = float(
+                    latency[0]["value"][1]
+                )
+
+        except Exception as e:
+
+            metrics["latency_error"] = str(e)
+
+        evidence.metrics = metrics

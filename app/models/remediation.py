@@ -9,6 +9,9 @@ class RemediationStep(BaseModel):
 
 
 class RemediationPlan(BaseModel):
+    action_required: bool
+
+    action_reason: str
 
     risk: str
 

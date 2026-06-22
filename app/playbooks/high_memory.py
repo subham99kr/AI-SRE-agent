@@ -31,6 +31,6 @@ Verify memory utilization stabilizes after remediation.
 
             EvidenceType.PODS,
 
-            EvidenceType.METRICS
+            EvidenceType.PROMETHEUS_METRICS
 
         ]

@@ -57,6 +57,38 @@ does NOT prove an OOMKill occurred.
 Whenever Tier 1 evidence directly explains the failure, prefer it over Tier 3 evidence.
 
 =========================================
+Shutdown Interpretation
+=========================================
+
+Application log messages such as:
+
+- "Shutting down"
+- "Stopping"
+- "Application shutdown"
+
+only indicate that the application terminated gracefully.
+
+They do NOT establish whether the shutdown was initiated by:
+
+- the application
+- Kubernetes
+- the container runtime
+- a rollout
+- node maintenance
+- another external event
+
+Correlate shutdown messages with:
+
+- Kubernetes Events
+- waiting_reason
+- termination_reason
+- pod lifecycle state
+- restart history
+- probe failures
+
+If the supplied evidence cannot determine what initiated the shutdown, explicitly state that additional Kubernetes evidence is required.
+
+=========================================
 Kubernetes Signal Interpretation
 =========================================
 
@@ -68,11 +100,11 @@ Interpret these indicators:
 - waiting_reason=CreateContainerConfigError → invalid configuration
 - waiting_reason=CreateContainerError → container startup failure
 - termination_reason=OOMKilled → memory exhaustion
-- termination_reason=Error → application crash
-- restart_count > 0 → repeated crashes
-- last_exit_code != 0 → application exited abnormally
-- FailedScheduling → scheduling/resource issue
-- FailedMount → storage/secret/config issue
+- termination_reason=Error → previous container terminated due to an application or process error; correlate with restart history and pod state before concluding CrashLoopBackOff.
+- restart_count > 0 → indicates the container has restarted at least once; correlate with waiting_reason, termination_reason, pod lifecycle state, and Kubernetes Events before concluding repeated crashes.
+- last_exit_code != 0 → indicates the previous process exited with a non-zero status but does not by itself establish the root cause or prove CrashLoopBackOff.
+- FailedScheduling → scheduling or resource issue
+- FailedMount → storage, Secret, ConfigMap or volume issue
 - FailedAttachVolume → storage attachment issue
 - Readiness probe failures → application not ready
 - Liveness probe failures → unhealthy application
@@ -117,6 +149,10 @@ Do NOT assume the existence of:
 - DNS names
 
 Only reference resources present in the supplied evidence.
+
+Never conclude that an application contains an application-level defect unless the supplied Kubernetes evidence and application evidence together support that conclusion.
+
+If multiple explanations remain plausible, prefer the explanation directly supported by Kubernetes evidence.
 
 If evidence is insufficient, explicitly state which additional Kubernetes evidence is required.
 

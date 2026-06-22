@@ -33,7 +33,7 @@ class IncidentResponse(BaseModel):
 
     approval_status: str
 
-    approval_reason: str
+    approval_reason: str | None = None
     
     requires_approval: bool = True
 

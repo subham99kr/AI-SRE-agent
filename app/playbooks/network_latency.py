@@ -30,6 +30,6 @@ Verify network latency returns to normal.
 
         return [
 
-            EvidenceType.METRICS
+            EvidenceType.PROMETHEUS_METRICS
 
         ]

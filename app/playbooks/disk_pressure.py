@@ -32,6 +32,6 @@ Verify disk pressure clears and workloads stabilize.
 
             EvidenceType.NODES,
 
-            EvidenceType.METRICS
+            EvidenceType.PROMETHEUS_METRICS
 
         ]

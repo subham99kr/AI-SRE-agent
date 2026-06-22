@@ -34,15 +34,6 @@ class InvestigationState(
     # Previous Attempt
     #
 
-    # previous_root_cause: str
-
-    # previous_remediation_steps: list
-
-    # previous_execution_results: list
-
-    # previous_verification_message: str
-
-    # previous_operator_feedback: str
 
     previous_attempt_summary: str
     #
@@ -62,6 +53,10 @@ class InvestigationState(
     #
     # Approval
     #
+
+    action_required: bool
+
+    action_reason: str
 
     status: str
 

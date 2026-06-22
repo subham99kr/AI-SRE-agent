@@ -68,21 +68,22 @@ class IncidentClassifier:
             # CrashLoop
             #
 
+            if waiting_reason == "CrashLoopBackOff":
+                return "CRASH_LOOP"
+
+            if (
+                restart_count >= 3
+                and phase != "Running"
+
+            ):
+
+                return "CRASH_LOOP"
+
             if (
 
-                waiting_reason == "CrashLoopBackOff"
+                termination_reason == "Error"
 
-                or restart_count >= 3
-
-                or (
-
-                    last_exit_code is not None
-
-                    and last_exit_code != 0
-
-                )
-
-                or termination_reason == "Error"
+                and restart_count >= 3
 
             ):
 

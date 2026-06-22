@@ -30,7 +30,7 @@ Verify the error rate returns to acceptable levels.
 
         return [
 
-            EvidenceType.METRICS,
+            EvidenceType.PROMETHEUS_METRICS,
 
             EvidenceType.LOGS
 

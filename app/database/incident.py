@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     Integer,
     func,
+    Text
 )
 from typing import Optional
 
@@ -48,7 +49,8 @@ class Incident(Base):
     )
 
     root_cause: Mapped[str] = mapped_column(
-        String(500)
+        Text,
+        nullable=False
     )
 
     confidence: Mapped[float] = mapped_column(
@@ -57,6 +59,18 @@ class Incident(Base):
 
     risk: Mapped[str] = mapped_column(
         String(20)
+    )
+
+    action_required = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True
+    )
+
+    action_reason = mapped_column(
+        Text,
+        nullable=False,
+        default=""
     )
 
     requires_approval: Mapped[bool] = mapped_column(
@@ -85,7 +99,7 @@ class Incident(Base):
     )
 
     approval_reason: Mapped[str | None] = mapped_column(
-        String(500),
+        Text,
         nullable=True
     )
 

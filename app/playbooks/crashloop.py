@@ -42,6 +42,8 @@ Do not suggest image pull fixes unless evidence supports it.
 
             EvidenceType.CONFIGMAP_REPORT,
 
-            EvidenceType.SECRET_REPORT
+            EvidenceType.SECRET_REPORT,
+
+            EvidenceType.PROMETHEUS_METRICS
 
         ]

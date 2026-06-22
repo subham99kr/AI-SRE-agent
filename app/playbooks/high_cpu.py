@@ -32,6 +32,6 @@ Verify CPU utilization returns to a healthy level.
 
             EvidenceType.PODS,
 
-            EvidenceType.METRICS
+            EvidenceType.PROMETHEUS_METRICS
 
         ]

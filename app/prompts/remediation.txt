@@ -59,6 +59,48 @@ If previous attempts exist:
 - Explain why the new remediation is preferable.
 
 =========================================
+Operator Action Decision
+=========================================
+
+Before generating a remediation plan, determine whether operator intervention is actually required.
+
+Set:
+"action_required": false
+
+ONLY if ALL of the following are true:
+
+- The workload is currently healthy.
+- The supplied Kubernetes evidence indicates the issue has already recovered.
+- There is no ongoing availability, performance, or reliability issue.
+- The supplied evidence does not justify modifying Kubernetes resources.
+
+Examples include:
+
+- SandboxChanged
+- Completed rollout
+- Temporary restart that has already recovered
+- Transient infrastructure events
+
+When action_required is false:
+
+- Explain why no operator intervention is required.
+- Set:
+  "requires_approval": false
+- Set:
+  "approval_reason": null
+- Set:
+  "rollback_available": false
+- Return an empty "steps" array.
+
+Do NOT recommend restarting, scaling, patching, or modifying Kubernetes resources simply because a transient event occurred.
+
+Set:
+
+"action_required": true
+
+ONLY when operator intervention is required to restore or improve system health.
+
+=========================================
 Requirements
 =========================================
 
@@ -135,20 +177,60 @@ Include, when appropriate:
 
 13. Explain why this remediation is preferred over previous failed remediations.
 
+14. approval_reason is REQUIRED only when requires_approval is true.
+If requires_approval is false, set
+"approval_reason": null
+
+15. When action_required is false:
+
+- steps MUST be an empty array.
+- rollback_available MUST be false.
+- requires_approval MUST be false.
+- risk MUST be LOW.
 =========================================
 Return
 =========================================
 
 Return ONLY valid JSON.
 
+Schema
+
+{
+  "action_required": boolean,
+  "action_reason": string,
+  "risk": "LOW | MEDIUM | HIGH",
+  "requires_approval": boolean,
+  "approval_reason": string | null,
+  "rollback_available": boolean,
+  "reasoning": string,
+  "steps": [
+    {
+      "description": string,
+      "kubectl_command": string | null
+    }
+  ]
+}
+
+
+When action_required is false:
+
+- action_reason MUST explain why operator intervention is unnecessary.
+- risk MUST be LOW.
+- requires_approval MUST be false.
+- approval_reason MUST be null.
+- rollback_available MUST be false.
+- steps MUST be an empty array.
+
 Example
 
 {
+  "action_required": true,
+  "action_reason": "The deployment remains unavailable and requires operator intervention.",
   "risk": "HIGH",
   "requires_approval": true,
   "approval_reason": "Changing the deployment specification requires human approval.",
   "rollback_available": true,
-  "reasoning": "The Deployment specification explicitly configures the container to execute 'exit 1'. This deterministic configuration error explains the CrashLoopBackOff. Previous logs contain the message 'Database connection failed', but there is insufficient evidence that a real database connection was attempted. Therefore correcting the deployment command is safer than modifying environment variables or Secrets.",
+  "reasoning": "The Deployment specification explicitly configures the container to execute 'exit 1'. This deterministic configuration error explains the CrashLoopBackOff. The remediation modifies the deployment specification to correct the container command.",
   "steps": [
     {
       "description": "Review the deployment specification.",

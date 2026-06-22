@@ -172,20 +172,7 @@ class InvestigationGraph:
             "persist"
         )
 
-        # graph.add_edge(
-        #     "execute_remediation",
-        #     "verify_remediation"
-        # )
-
-        # graph.add_edge(
-        #     "verify_remediation",
-        #     "generate_summary"
-        # )
-
-        # graph.add_edge(
-        #     "generate_summary",
-        #     "persist"
-        # )
+     
         graph.add_edge(
             "persist",
             END
@@ -404,9 +391,6 @@ class InvestigationGraph:
             "root_cause":
             result["root_cause"],
 
-            # "fix_plan":
-            # result["fix_plan"],
-
             "confidence":
             result["confidence"]
         }
@@ -457,6 +441,10 @@ class InvestigationGraph:
 
             "rollback_available":
             result["rollback_available"],
+
+            "action_required": result["action_required"],
+
+            "action_reason": result["action_reason"],
 
             "remediation_reasoning":
             result.get(
@@ -632,7 +620,25 @@ class InvestigationGraph:
         print("=" * 80)
 
         #
-        # LOW risk → execute automatically
+        # No operator intervention required
+        #
+
+        if not state["action_required"]:
+
+            print("NO OPERATOR ACTION REQUIRED")
+
+            return {
+
+                "approval_status":
+                "NOT_REQUIRED",
+
+                "status":
+                "NO_ACTION_REQUIRED"
+
+            }
+
+        #
+        # LOW risk → auto approved
         #
 
         if not state["requires_approval"]:
@@ -650,7 +656,7 @@ class InvestigationGraph:
             }
 
         #
-        # MEDIUM/HIGH/CRITICAL
+        # Human approval required
         #
 
         print("WAITING FOR HUMAN APPROVAL")

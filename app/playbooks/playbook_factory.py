@@ -105,6 +105,9 @@ from app.playbooks.tls_failure import (
 from app.playbooks.unschedulable import (
     UnschedulablePlaybook
 )
+from app.playbooks.general_investigation import (
+    GeneralInvestigationPlaybook
+)
 
 
 class PlaybookFactory:
@@ -186,7 +189,10 @@ class PlaybookFactory:
         TLSFailurePlaybook,
 
         "API_SERVER_FAILURE":
-        APIServerFailurePlaybook
+        APIServerFailurePlaybook,
+
+        "UNKNOWN":
+        GeneralInvestigationPlaybook,
 
     }
 

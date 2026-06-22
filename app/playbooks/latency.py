@@ -30,6 +30,6 @@ Verify response times return to normal.
 
         return [
 
-            EvidenceType.METRICS
+            EvidenceType.PROMETHEUS_METRICS
 
         ]

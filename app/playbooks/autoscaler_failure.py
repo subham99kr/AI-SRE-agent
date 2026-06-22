@@ -30,7 +30,7 @@ Verify automatic scaling resumes successfully.
 
         return [
 
-            EvidenceType.METRICS,
+            EvidenceType.PROMETHEUS_METRICS,
 
             EvidenceType.PODS
 

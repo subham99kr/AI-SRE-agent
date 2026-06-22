@@ -40,6 +40,8 @@ Verify the container no longer terminates with OOMKilled.
 
             EvidenceType.LOGS,
 
-            EvidenceType.POD_REPORT
+            EvidenceType.POD_REPORT,
+
+            EvidenceType.PROMETHEUS_METRICS
 
         ]

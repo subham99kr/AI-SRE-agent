@@ -179,6 +179,10 @@ async def investigate_cluster(
 
         root_cause=graph_result["root_cause"],
 
+        action_required=graph_result["action_required"],
+
+        action_reason=graph_result["action_reason"],
+
         confidence=graph_result["confidence"],
 
         risk=graph_result["risk"],
