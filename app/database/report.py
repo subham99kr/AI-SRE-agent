@@ -27,7 +27,7 @@ class Report(Base):
     )
 
     title: Mapped[str] = mapped_column(
-        String(200)
+        Text
     )
 
     executive_summary: Mapped[str] = mapped_column(
@@ -39,7 +39,7 @@ class Report(Base):
     )
 
     overall_status: Mapped[str] = mapped_column(
-        String(100)
+        Text
     )
 
     recommendations: Mapped[list] = mapped_column(

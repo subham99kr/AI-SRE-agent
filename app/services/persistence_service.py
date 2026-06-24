@@ -99,10 +99,29 @@ class PersistenceService:
             evidence_repo.create(
                 Evidence(
                     incident_id=incident.id,
-                    deployment_spec=state["evidence"]["deployment"],
-                    pods=state["evidence"]["pods"],
-                    events=state["evidence"]["events"],
-                    logs=state["evidence"]["logs"],
+
+                    deployment_spec=state["evidence"].get(
+                        "deployment",
+                        {}
+                    ),
+
+                    pods=state["evidence"].get(
+                        "pods",
+                        []
+                    ),
+
+                    events=state["evidence"].get(
+                        "events",
+                        []
+                    ),
+
+                    logs=state["evidence"].get(
+                        "logs",
+                        []
+                    ),
+
+                    raw_evidence=state["evidence"]
+
                 )
             )
 

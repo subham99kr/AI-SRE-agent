@@ -168,7 +168,45 @@ Events
 
 ↓
 
-High confidence.
+good confidence.
+
+=========================================
+Current State Assessment
+========================
+
+Before identifying a root cause, determine whether an active incident currently exists.
+
+Evidence indicating a healthy workload includes:
+
+* Pod phase is Running
+* Containers are Ready
+* Deployment desired replicas equal available replicas
+* No active waiting_reason
+* No active probe failures
+* No recent BackOff behavior
+* Application logs indicate normal request processing
+* Metrics indicate normal operation
+
+Historical Kubernetes Events alone do not establish an active incident.
+
+Examples:
+
+* SandboxChanged
+* Killing during rollout
+* Pulled
+* Scheduled
+* Started
+
+may describe past lifecycle events that have already recovered.
+
+If the workload is currently healthy and the evidence indicates a transient event that has already resolved:
+
+* State this explicitly.
+* Describe the historical event as a recovered event, not an ongoing failure.
+* Do not characterize the workload as currently unstable.
+
+Root cause should explain the current state of the workload, not merely the most unusual historical event.
+
 
 =========================================
 Your Task

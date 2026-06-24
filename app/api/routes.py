@@ -9,6 +9,17 @@ from app.api.schemas import (
     ClusterIncidentRequest,
     AttemptResponse
 )
+from app.models.incident_group_response import IncidentGroupResponse
+
+from app.services.incident_history_service import IncidentHistoryService
+
+from app.services.incident_group_service import IncidentGroupService
+
+from app.utils.sqlalchemy_utils import model_to_dict
+
+from app.services.incident_details_service import (
+    IncidentDetailsService
+)
 
 from app.workflows.investigation_graph import (
     InvestigationGraph
@@ -41,6 +52,7 @@ from app.services.retry_memory_service import (
 from app.models.reject_request import (
     RejectRequest
 )
+from app.models.IncidentDetailsResponse import IncidentDetailsResponse
 
 
 router = APIRouter()
@@ -275,6 +287,7 @@ async def delete_incident(
     return {
         "message": "Incident deleted successfully."
     }
+
 @router.post(
     "/incidents/{incident_id}/approve"
 )
@@ -349,10 +362,10 @@ async def approve_incident(
     }
 
 @router.get(
-    "/incidents/{root_id}/attempts",
+    "/incidents/{root_id}/attempts_min",
     response_model=list[AttemptResponse]
 )
-async def get_attempts(
+async def get_attempts_min(
     root_id: str
 ):
 
@@ -368,6 +381,21 @@ async def get_attempts(
 
     return attempts
 
+@router.get(
+    "/incidents/{root_incident_id}/attempts"
+)
+async def get_attempts(
+    root_incident_id: str
+):
+
+    return (
+
+        IncidentHistoryService()
+        .get_attempts(
+            root_incident_id
+        )
+
+    )
 
 @router.post(
     "/incidents/{incident_id}/retry",
@@ -525,3 +553,53 @@ async def get_retry_memory(
     return {
         "summary": summary
     }
+
+
+
+
+@router.get(
+    "/incidents/{incident_id}",
+    response_model=IncidentDetailsResponse
+)
+async def get_incident(
+
+    incident_id: str
+
+):
+
+    result = (
+
+        IncidentDetailsService()
+
+        .get(
+            incident_id
+        )
+
+    )
+
+    if result is None:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Incident not found."
+
+        )
+
+    return result
+
+@router.get(
+    "/incident-groups",
+    response_model=list[
+        IncidentGroupResponse
+    ]
+)
+async def get_incident_groups():
+
+    return (
+
+        IncidentGroupService()
+        .get_groups()
+
+    )

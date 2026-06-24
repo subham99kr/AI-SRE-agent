@@ -58,7 +58,7 @@ class Incident(Base):
     )
 
     risk: Mapped[str] = mapped_column(
-        String(20)
+        Text
     )
 
     action_required = mapped_column(

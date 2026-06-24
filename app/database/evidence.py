@@ -44,3 +44,8 @@ class Evidence(Base):
     logs: Mapped[list] = mapped_column(
         JSONB
     )
+
+    raw_evidence: Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=True
+    )

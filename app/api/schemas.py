@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Any
 
 
 class IncidentRequest(BaseModel):
@@ -67,32 +68,45 @@ class IncidentListItem(BaseModel):
     verification_success: bool
 
 
+# class IncidentDetailsResponse(BaseModel):
+
+#     id: str
+
+#     created_at: datetime
+
+#     namespace: str
+
+#     deployment: str
+
+#     incident_type: str
+
+#     root_cause: str
+
+#     confidence: float
+
+#     risk: str
+
+#     requires_approval: bool
+
+#     rollback_available: bool
+
+#     verification_success: bool
+
+#     verification_message: str
+
 class IncidentDetailsResponse(BaseModel):
 
-    id: str
+    incident: dict | None = None
 
-    created_at: datetime
+    evidence: dict | None = None
 
-    namespace: str
+    remediation: dict | None = None
 
-    deployment: str
+    execution: dict | None = None
 
-    incident_type: str
+    verification: dict | None = None
 
-    root_cause: str
-
-    confidence: float
-
-    risk: str
-
-    requires_approval: bool
-
-    rollback_available: bool
-
-    verification_success: bool
-
-    verification_message: str
-
+    report: dict | None = None
 
 class AttemptResponse(BaseModel):
 
