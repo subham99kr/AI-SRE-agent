@@ -1,16 +1,22 @@
 from kubernetes import client
 
-from app.config.kubernetes_config import load_cluster_config
+from kubernetes import client
+
+from app.config.kubernetes_config import (
+    ClusterManager
+)
 
 
 class KubernetesTool:
 
-    def __init__(self):
+    def __init__(self,cluster_id: str):
+        self.cluster_id = cluster_id
 
-        load_cluster_config()
+        api_client = (ClusterManager().get_client(cluster_id))
 
-        self.core_api = client.CoreV1Api()
-        self.apps_api = client.AppsV1Api()
+        self.core_api = (client.CoreV1Api(api_client))
+
+        self.apps_api = (client.AppsV1Api(api_client))
 
     def get_deployment(
         self,
@@ -385,3 +391,152 @@ class KubernetesTool:
             name=name,
             namespace=namespace
         )
+    
+    def list_namespaces(self):
+
+        return [
+
+            namespace.metadata.name
+
+            for namespace
+
+            in
+
+            self.core_api.list_namespace().items
+
+        ]
+        
+    def list_deployments(
+
+        self,
+
+        namespace: str
+
+    ):
+
+        return self.apps_api.list_namespaced_deployment(
+
+            namespace=namespace
+
+        ).items
+
+    def list_replicasets(
+
+        self,
+
+        namespace: str
+
+    ):
+
+        return self.apps_api.list_namespaced_replica_set(
+
+            namespace=namespace
+
+        ).items
+
+    def list_pods(
+
+        self,
+
+        namespace: str
+
+    ):
+
+        pods = self.core_api.list_namespaced_pod(
+
+            namespace=namespace
+
+        )
+
+        result = []
+
+        for pod in pods.items:
+
+            restart_count = 0
+
+            ready = False
+
+            statuses = (
+
+                pod.status.container_statuses
+
+                or
+
+                []
+
+            )
+
+            if statuses:
+
+                restart_count = sum(
+
+                    c.restart_count
+
+                    for c in statuses
+
+                )
+
+                ready = all(
+
+                    c.ready
+
+                    for c in statuses
+
+                )
+
+            deployment = None
+
+            replicaset = None
+
+            owners = (
+
+                pod.metadata.owner_references
+
+                or
+
+                []
+
+            )
+
+            if owners:
+
+                owner = owners[0]
+
+                if owner.kind == "ReplicaSet":
+
+                    replicaset = owner.name
+
+                    deployment = "-".join(
+
+                        owner.name.split("-")[:-1]
+
+                    )
+
+            result.append(
+
+                {
+
+                    "name":
+                    pod.metadata.name,
+
+                    "deployment":
+                    deployment,
+
+                    "replicaset":
+                    replicaset,
+
+                    "status":
+                    pod.status.phase,
+
+                    "ready":
+                    ready,
+
+                    "restarts":
+                    restart_count
+
+                }
+
+            )
+
+        return result
+        

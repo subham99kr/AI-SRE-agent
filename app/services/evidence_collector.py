@@ -18,10 +18,14 @@ from app.tools.prometheus_reader import (
 
 class EvidenceCollector:
 
-    def __init__(self):
+    def __init__(
+        self,
+        cluster_id: str
+    ):
 
-        self.k8s = KubernetesTool()
-        self.prometheus = PrometheusTool()
+        self.k8s = KubernetesTool(cluster_id)
+
+        self.prometheus = PrometheusTool(cluster_id)
 
         self.collectors = {
 

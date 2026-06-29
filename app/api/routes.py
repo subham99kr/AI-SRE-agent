@@ -53,10 +53,39 @@ from app.models.reject_request import (
     RejectRequest
 )
 from app.models.IncidentDetailsResponse import IncidentDetailsResponse
+from app.services.cluster_overview_service import (
+    ClusterOverviewService
+)
+
+from app.models.cluster_overview import (
+    ClusterOverview
+)
+
+from app.services.prometheus_connection_service import (
+    PrometheusConnectionService
+)
 
 
 router = APIRouter()
 
+
+@router.get(
+
+    "/clusters",
+
+    response_model=list[ClusterOverview]
+
+)
+
+async def get_clusters():
+
+    return (
+
+        ClusterOverviewService()
+
+        .get_clusters()
+
+    )
 
 @router.post(
     "/investigate",
@@ -128,6 +157,7 @@ async def investigate_cluster(
 
     graph_result = await graph.ainvoke(
         {
+            "cluster_id": request.cluster_id,
             "namespace": request.namespace,
             "deployment": request.deployment
         }
@@ -259,18 +289,6 @@ async def get_latest_incidents():
 
     return incidents
 
-@router.get(
-    "/incidents/latest",
-    response_model=list[IncidentListItem]
-)
-async def get_latest_incidents():
-
-    incidents = (
-        IncidentService()
-        .get_latest()
-    )
-
-    return incidents
 
 
 @router.delete(
@@ -603,3 +621,34 @@ async def get_incident_groups():
         .get_groups()
 
     )
+
+
+
+@router.get(
+    "/clusters/status"
+)
+async def cluster_status():
+
+    service = (
+
+        PrometheusConnectionService()
+
+    )
+
+    statuses = service.verify_all()
+
+    return [
+
+        {
+
+            "cluster_id": cluster,
+
+            "online": online
+
+        }
+
+        for cluster, online
+
+        in statuses.items()
+
+    ]

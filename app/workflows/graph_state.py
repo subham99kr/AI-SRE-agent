@@ -13,9 +13,8 @@ class InvestigationState(
     #
     # Incoming Request
     #
-
+    cluster_id: str
     namespace: str
-
     deployment: str
 
     #

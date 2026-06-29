@@ -5,14 +5,40 @@ import json
 from app.models.execution import (
     CommandResult
 )
+from app.config.kubernetes_config import ClusterManager
 
 
 class KubectlTool:
+    def __init__(
+        self,
+        cluster_id: str
+    ):
+
+        self.kubeconfig = (
+            ClusterManager()
+            .get_kubeconfig_path(cluster_id)
+        )
+
+        if self.kubeconfig is None:
+            raise ValueError(
+                f"Unknown cluster: {cluster_id}"
+            )
 
     def run(
         self,
         command: str
     ) -> CommandResult:
+        
+        command = command.strip()
+
+        if command.startswith("kubectl "):
+            command = command[len("kubectl "):]
+
+        command = (
+            f'kubectl '
+            f'--kubeconfig "{self.kubeconfig}" '
+            f'{command}'
+        )
 
         try:
 
@@ -22,7 +48,7 @@ class KubectlTool:
                 args,
                 capture_output=True,
                 text=True,
-                timeout=120
+                timeout=10
             )
 
             return CommandResult(
@@ -48,7 +74,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl rollout status "
+            f"rollout status "
             f"deployment/{deployment} "
             f"-n {namespace}"
         )
@@ -62,7 +88,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl rollout restart "
+            f"rollout restart "
             f"deployment/{deployment} "
             f"-n {namespace}"
         )
@@ -76,7 +102,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl rollout undo "
+            f"rollout undo "
             f"deployment/{deployment} "
             f"-n {namespace}"
         )
@@ -89,7 +115,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl apply -f {file_path}"
+            f"apply -f {file_path}"
         )
 
         return self.run(command)
@@ -100,7 +126,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl delete -f {file_path}"
+            f"delete -f {file_path}"
         )
 
         return self.run(command)
@@ -114,7 +140,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl patch {resource} {name} "
+            f"patch {resource} {name} "
             f"-n {namespace} "
             f"-p '{patch}'"
         )
@@ -129,7 +155,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl scale deployment "
+            f"scale deployment "
             f"{deployment} "
             f"--replicas={replicas} "
             f"-n {namespace}"
@@ -143,7 +169,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl get pods "
+            f"get pods "
             f"-n {namespace}"
         )
 
@@ -156,7 +182,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl get deployment "
+            f"get deployment "
             f"{deployment} "
             f"-n {namespace}"
         )
@@ -170,7 +196,7 @@ class KubectlTool:
     ) -> CommandResult:
 
         command = (
-            f"kubectl describe deployment "
+            f"describe deployment "
             f"{deployment} "
             f"-n {namespace}"
         )
@@ -184,7 +210,7 @@ class KubectlTool:
     ):
 
         command = (
-            f"kubectl get deployment "
+            f"get deployment "
             f"{deployment} "
             f"-n {namespace} "
             f"-o json"
@@ -207,7 +233,7 @@ class KubectlTool:
     ):
 
         command = (
-            f"kubectl get pods "
+            f"get pods "
             f"-n {namespace} "
             f"-o json"
         )

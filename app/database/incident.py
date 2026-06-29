@@ -35,6 +35,10 @@ class Incident(Base):
         DateTime(timezone=True),
         server_default=func.now()
     )
+    cluster_id = mapped_column(
+        String(100),
+        nullable=False
+    )
 
     namespace: Mapped[str] = mapped_column(
         String(100)

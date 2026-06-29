@@ -9,19 +9,18 @@ from app.tools.kubectl_tool import (
 
 class ExecutionAgent:
 
-    def __init__(self):
-
-        self.tool = KubectlTool()
-
     async def run(
 
         self,
+        cluster_id: str,
 
         remediation_steps: list,
 
         approved: bool
 
     ) -> list[dict]:
+        
+        self.tool = KubectlTool(cluster_id)
 
         if not approved:
 

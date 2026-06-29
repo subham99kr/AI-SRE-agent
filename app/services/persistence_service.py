@@ -41,6 +41,7 @@ class PersistenceService:
 
             incident = Incident(
 
+                cluster_id=state["cluster_id"],
                 namespace=state["namespace"],
                 deployment=state["deployment"],
                 incident_type=state["incident_type"],

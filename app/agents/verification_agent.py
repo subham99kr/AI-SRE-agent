@@ -7,26 +7,26 @@ from app.models.verification import (
 from app.tools.kubectl_tool import (
     KubectlTool
 )
+from app.config.settings import settings
 
 
 class VerificationAgent:
 
-    STABILIZATION_SECONDS = 10
-
-    def __init__(self):
-
-        self.tool = KubectlTool()
+    STABILIZATION_SECONDS  = settings.STABILIZATION_TIME
 
     async def run(
 
         self,
+
+        cluster_id: str,
 
         namespace: str,
 
         deployment: str
 
     ) -> VerificationResult:
-
+        
+        self.tool = KubectlTool(cluster_id)
         checks = []
 
         #

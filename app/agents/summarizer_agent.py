@@ -22,6 +22,8 @@ class SummarizerAgent:
 
         self,
 
+        cluster_id : str,
+        
         namespace: str,
 
         deployment: str,
@@ -63,7 +65,7 @@ class SummarizerAgent:
         payload = json.dumps(
 
             {
-
+                "cluster_id" : cluster_id,
                 "namespace": namespace,
 
                 "deployment": deployment,

@@ -1,16 +1,19 @@
 import requests
 
 from app.config.prometheus_config import (
-    PROMETHEUS_URL,
     PROMETHEUS_TIMEOUT
+)
+
+from app.config.kubernetes_config import (
+    ClusterManager
 )
 
 
 class PrometheusTool:
 
-    def __init__(self):
+    def __init__(self,cluster_id: str):
 
-        self.base_url = PROMETHEUS_URL
+        self.base_url = (ClusterManager().get_prometheus_url(cluster_id))
 
     ####################################################################
     #

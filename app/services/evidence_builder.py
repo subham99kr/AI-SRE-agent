@@ -9,9 +9,12 @@ from app.tools.kubernetes_reader import (
 
 class EvidenceBuilder:
 
-    def __init__(self):
+    def __init__(
+        self,
+        cluster_id: str
+    ):
 
-        self.k8s = KubernetesTool()
+        self.k8s = KubernetesTool(cluster_id)
 
     def build_initial_context(
 
@@ -113,6 +116,8 @@ class EvidenceBuilder:
                 )
 
         return Evidence(
+            
+            cluster_id=self.k8s.cluster_id,
 
             namespace=namespace,
 

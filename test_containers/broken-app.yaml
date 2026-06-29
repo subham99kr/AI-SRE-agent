@@ -18,8 +18,4 @@ spec:
         command:
         - sh
         - -c
-        - |
-          echo "Starting..."
-          echo "Connecting to database..."
-          echo "Database connection failed"
-          exit 1
+        - exit 1

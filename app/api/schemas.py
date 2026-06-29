@@ -11,7 +11,7 @@ class IncidentRequest(BaseModel):
 class ClusterIncidentRequest(BaseModel):
 
     namespace: str
-
+    cluster_id: str
     deployment: str
 
 
@@ -56,7 +56,7 @@ class IncidentListItem(BaseModel):
     id: str
 
     created_at: datetime
-
+    cluster_id : str
     namespace: str
 
     deployment: str
@@ -68,31 +68,6 @@ class IncidentListItem(BaseModel):
     verification_success: bool
 
 
-# class IncidentDetailsResponse(BaseModel):
-
-#     id: str
-
-#     created_at: datetime
-
-#     namespace: str
-
-#     deployment: str
-
-#     incident_type: str
-
-#     root_cause: str
-
-#     confidence: float
-
-#     risk: str
-
-#     requires_approval: bool
-
-#     rollback_available: bool
-
-#     verification_success: bool
-
-#     verification_message: str
 
 class IncidentDetailsResponse(BaseModel):
 

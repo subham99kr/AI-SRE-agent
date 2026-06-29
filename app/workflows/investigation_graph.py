@@ -189,7 +189,7 @@ class InvestigationGraph:
         print("COLLECT_EVIDENCE NODE")
         print("=" * 80)
 
-        builder = EvidenceBuilder()
+        builder = EvidenceBuilder(state["cluster_id"])
 
         evidence = (
             builder.build_initial_context(
@@ -255,7 +255,7 @@ class InvestigationGraph:
 
             return {}
 
-        collector = EvidenceCollector()
+        collector = EvidenceCollector(state["cluster_id"])
 
         collector.collect(
 
@@ -720,18 +720,4 @@ class InvestigationGraph:
         return {
             "previous_attempt_summary": summary
         }
-        
-    # async def route_after_approval(
-    #     self,
-    #     state: InvestigationState
-    # ):
-
-    #     if state["approval_status"] == "AUTO_APPROVED":
-
-    #         state["status"] = "APPROVED"
-
-    #         return "persist"
-
-    #     state["status"] = "PENDING_APPROVAL"
-
-    #     return "persist_pending"
+    

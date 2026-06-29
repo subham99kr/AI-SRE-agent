@@ -16,7 +16,7 @@ class Evidence(BaseModel):
     #
     # Initial Investigation
     #
-
+    cluster_id: str
     namespace: str
 
     deployment: str

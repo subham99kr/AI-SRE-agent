@@ -125,6 +125,9 @@ class ExecutionGraph:
             "incident_id":
             context["incident"].id,
 
+            "cluster_id":
+            context["incident"].cluster_id,
+
             "incident":
             context["incident"],
 
@@ -151,6 +154,7 @@ class ExecutionGraph:
 
             remediation_steps=
             state["remediation"].steps,
+            cluster_id=state["cluster_id"],
 
             approved=True
 
@@ -199,6 +203,7 @@ class ExecutionGraph:
             )
 
             last_result = await agent.run(
+                cluster_id=state["cluster_id"],
 
                 namespace=
                 state["incident"].namespace,
@@ -256,6 +261,7 @@ class ExecutionGraph:
         agent = SummarizerAgent()
 
         report = await agent.run(
+            cluster_id=state["cluster_id"],
 
             namespace=state["incident"].namespace,
 

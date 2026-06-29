@@ -15,6 +15,8 @@ class Settings(BaseSettings):
 
     POSTGRES_PASSWORD: str = "postgres"
 
+    STABILIZATION_TIME: int = 10
+
     class Config:
         env_file = ".env"
 

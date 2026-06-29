@@ -10,6 +10,8 @@ class ExecutionState(TypedDict, total=False):
 
     incident_id: str
 
+    cluster_id: str
+
     incident: Incident
 
     evidence: Evidence

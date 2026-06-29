@@ -50,6 +50,9 @@ class IncidentGroupService:
                     "root_incident_id":
                     group.root_incident_id,
 
+                    "cluster_id":
+                    latest.cluster_id,
+
                     "namespace":
                     group.namespace,
 

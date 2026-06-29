@@ -1,0 +1,14 @@
+clusters:
+- id: test
+  name: test
+  kubeconfig: ./clusters/test.yaml
+  prometheus: http://localhost:31419
+- id: ai-sre
+  name: ai-sre
+  kubeconfig: ./clusters/ai-sre.yaml
+  prometheus: http://localhost:30396
+- id: random
+  name: random
+  kubeconfig: ./clusters/random.yaml
+  prometheus: http://localhost:9091
+  host_port: 9091
