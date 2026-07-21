@@ -1,1017 +1,1496 @@
-# AI-SRE: Autonomous Kubernetes Incident Investigation & Self-Healing Platform
+```markdown
+# 🤖 AI-SRE
 
-> An AI-powered Site Reliability Engineering (SRE) platform that autonomously investigates Kubernetes incidents, identifies their root causes, recommends or executes remediations, verifies recovery, and maintains a complete investigation history.
+> **Autonomous Kubernetes Incident Investigation & Self-Healing Platform**
 
----
+An AI-powered Site Reliability Engineering (SRE) platform that autonomously investigates Kubernetes incidents, identifies root causes using LLMs, generates explainable remediation plans, safely executes approved recovery actions, verifies cluster health, and continuously learns from previous incidents.
 
-# Motivation
+<p align="center">
 
-Modern cloud-native applications run on Kubernetes clusters that may contain hundreds or even thousands of containers. While Kubernetes provides self-healing capabilities such as restarting failed containers and rescheduling pods, it does **not** diagnose *why* failures occur or determine the most appropriate corrective action.
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
+![LangGraph](https://img.shields.io/badge/LangGraph-Agentic-purple)
+![LangChain](https://img.shields.io/badge/LangChain-Framework-green)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-success)
 
-In production environments, incidents such as:
-
-* CrashLoopBackOff
-* ImagePullBackOff
-* Failed Scheduling
-* OOMKilled Containers
-* Probe Failures
-* Configuration Errors
-* Resource Exhaustion
-* Persistent Volume Issues
-
-can lead to service degradation or complete outages.
-
-When these incidents occur, Site Reliability Engineers (SREs) typically perform a repetitive investigation process:
-
-1. Inspect Kubernetes events.
-2. Collect pod logs.
-3. Examine deployment specifications.
-4. Analyze resource utilization.
-5. Review previous deployment history.
-6. Correlate evidence from multiple sources.
-7. Determine the root cause.
-8. Decide on an appropriate remediation.
-9. Execute the remediation.
-10. Verify that the deployment has recovered.
-
-Although these steps are well understood, they remain largely manual, time-consuming, and dependent on individual expertise.
-
-For organizations operating multiple Kubernetes clusters, even a single production incident can consume significant engineering effort while delaying service restoration.
+</p>
 
 ---
 
-# The Problem
+# 🚀 Overview
 
-Manual incident investigation introduces several operational challenges:
+Modern Kubernetes clusters generate enormous amounts of operational data:
 
-* Increased Mean Time To Detect (MTTD)
-* Increased Mean Time To Resolve (MTTR)
-* Repetitive investigation across similar incidents
-* Delayed recovery during production outages
-* Human error during diagnosis and remediation
-* Inconsistent incident handling across engineering teams
-* Loss of valuable troubleshooting knowledge after incidents are resolved
+- Events
+- Logs
+- Metrics
+- Deployment revisions
+- ReplicaSets
+- Pods
+- Node status
+- Network state
 
-Longer outages not only affect application availability but also lead to wasted compute resources, reduced engineering productivity, missed service-level objectives (SLOs), and potential financial losses.
+Although Kubernetes is excellent at self-healing infrastructure, it does **not explain why failures occur** or determine the safest recovery strategy.
 
----
+Engineers still spend valuable time manually:
 
-# Our Solution
+- Inspecting events
+- Reading logs
+- Correlating metrics
+- Identifying root causes
+- Selecting recovery actions
+- Verifying deployments
 
-AI-SRE automates the complete Kubernetes incident response lifecycle.
-
-Instead of relying solely on predefined rules or alerts, AI-SRE combines:
-
-* Kubernetes API inspection
-* Prometheus metrics
-* Adaptive evidence collection
-* Incident-specific playbooks
-* Large Language Models (LLMs)
-* Automated remediation planning
-* Deployment verification
-* Historical incident memory
-
-to provide an end-to-end autonomous investigation pipeline.
-
-The platform separates **decision making** from **execution**, ensuring that high-risk operations can still require human approval while low-risk remediations can be performed automatically.
-
-Rather than replacing SREs, AI-SRE acts as an intelligent operational assistant capable of dramatically reducing investigation time and accelerating recovery.
+AI-SRE automates this investigation workflow while keeping humans in control of high-risk decisions.
 
 ---
 
-# Objectives
+# 🎯 Vision
 
-AI-SRE is designed to:
+AI-SRE aims to become an intelligent Site Reliability Engineer capable of:
 
-* Reduce Mean Time To Detect (MTTD)
-* Reduce Mean Time To Resolve (MTTR)
-* Minimize manual Kubernetes debugging
-* Standardize incident investigation
-* Provide explainable root cause analysis
-* Recommend safe remediations
-* Support automated execution where appropriate
-* Preserve investigation history for future incidents
-* Improve operational reliability across multiple Kubernetes clusters
+- Understanding Kubernetes incidents
+- Reasoning over operational evidence
+- Producing explainable diagnoses
+- Generating remediation plans
+- Executing approved recovery actions
+- Learning from previous incidents
 
----
-
-# Key Features
-
-## Multi-Cluster Management
-
-* Register multiple Kubernetes clusters
-* Independent kubeconfig management
-* Cluster-specific investigations
-* Cluster-specific Prometheus integration
+Rather than replacing SREs, AI-SRE augments operational teams by reducing repetitive investigation effort and accelerating production incident resolution.
 
 ---
 
-## Automated Evidence Collection
+# ❗ Problem Statement
 
-Automatically gathers operational evidence including:
+Traditional observability platforms answer:
 
-* Deployments
-* ReplicaSets
-* Pods
-* Events
-* Logs
-* Resource configuration
-* Node information
-* Kubernetes metadata
+> **What is failing?**
 
----
+Production engineers actually need answers to questions like:
 
-## Adaptive Investigation
+- Why is this Pod restarting?
+- Why did the rollout fail?
+- Is Kubernetes healthy?
+- Is the application unhealthy?
+- Which remediation is safest?
+- Has this happened before?
+- Can the recovery be automated?
 
-Rather than collecting every available resource, AI-SRE dynamically selects additional evidence based on the detected incident type using predefined playbooks.
+Existing monitoring tools expose telemetry but leave diagnosis and decision-making entirely to operators.
 
-This significantly reduces unnecessary data collection while improving diagnostic accuracy.
-
----
-
-## AI-Powered Root Cause Analysis
-
-Large Language Models analyze the collected evidence together with incident-specific playbooks and previous investigation history to determine:
-
-* Root Cause
-* Confidence Score
-* Supporting Evidence
+AI-SRE fills this gap by transforming raw operational data into actionable operational intelligence.
 
 ---
 
-## Intelligent Remediation Planning
+# 💡 Solution
 
-Generates remediation plans that include:
+AI-SRE combines deterministic Kubernetes tooling with Large Language Models to build an end-to-end autonomous incident response pipeline.
 
-* Recommended actions
-* Kubectl commands
-* Risk assessment
-* Rollback availability
-* Human approval requirements
-* Operational reasoning
+Instead of executing static automation scripts, the platform:
 
----
+1. Collects only relevant operational evidence.
+2. Selects an investigation strategy.
+3. Performs adaptive evidence collection.
+4. Determines the most probable root cause.
+5. Generates explainable remediation plans.
+6. Evaluates operational risk.
+7. Requests approval when required.
+8. Executes approved remediation.
+9. Verifies deployment recovery.
+10. Stores investigation history for future learning.
 
-## Automated Execution
-
-Approved remediation steps can be executed automatically.
-
-Every executed command records:
-
-* Command
-* Execution status
-* Standard output
-* Error output
-
-forming a complete execution audit trail.
+This architecture enables safe automation while maintaining complete auditability.
 
 ---
 
-## Recovery Verification
+# ✨ Core Capabilities
 
-Following remediation, AI-SRE continuously validates deployment health by checking rollout progress, pod readiness, deployment availability, and recovery status before declaring the incident resolved.
-
----
-
-## Persistent Incident Memory
-
-Every investigation is stored for future reference.
-
-When similar incidents occur again, AI-SRE incorporates previous investigation summaries into the reasoning process, enabling iterative learning and preventing repeated unsuccessful remediation attempts.
-
----
-
-## Monitoring Installer
-
-The project includes a lightweight monitoring installer that:
-
-* Deploys Prometheus
-* Configures RBAC
-* Creates persistent storage
-* Registers Kubernetes clusters
-* Exports kubeconfig files
-* Supports Windows and Linux
-
-without requiring Helm or cloud-provider-specific tooling.
+| Capability | Description |
+|------------|-------------|
+| 🔍 Adaptive Investigation | Collects only incident-specific evidence |
+| 🧠 Root Cause Analysis | LLM-powered reasoning across Kubernetes evidence |
+| 📋 Remediation Planning | Generates explainable recovery plans |
+| ⚠️ Risk Assessment | Evaluates operational impact before execution |
+| 👨‍💻 Human Approval | High-risk actions require operator approval |
+| ⚡ Automated Recovery | Executes approved remediation safely |
+| ✅ Verification | Confirms deployment health after execution |
+| 📚 Incident Memory | Learns from historical investigations |
+| 🌍 Multi-Cluster Support | Independent investigations across Kubernetes clusters |
 
 ---
 
-# High-Level Architecture
+# ⭐ Key Features
 
-```text
-                    +----------------------+
-                    |   Kubernetes Cluster |
-                    +----------+-----------+
-                               |
-             +-----------------+-----------------+
-             |                                   |
-             ▼                                   ▼
-      Kubernetes API                     Prometheus Metrics
-             |                                   |
-             +-----------------+-----------------+
-                               |
-                               ▼
-                 Evidence Collection Layer
-                               |
-                               ▼
-                  Incident Classification
-                               |
-                               ▼
-                Adaptive Evidence Collection
-                               |
-                               ▼
-                  Root Cause Analysis (LLM)
-                               |
-                               ▼
-                 Intelligent Remediation Plan
-                               |
-                               ▼
-                    Human Approval (Optional)
-                               |
-                               ▼
-                   Automated Command Execution
-                               |
-                               ▼
-                    Deployment Verification
-                               |
-                               ▼
-                    Incident Report Generation
-                               |
-                               ▼
-                     Persistent Incident Memory
-```
+## 🔍 Adaptive Evidence Collection
+
+Instead of collecting every Kubernetes resource, AI-SRE dynamically selects evidence based on the detected incident.
+
+Supported incident categories include:
+
+- CrashLoopBackOff
+- OOMKilled
+- Pending Pods
+- ImagePullBackOff
+- Failed Readiness Probes
+- Failed Liveness Probes
+- DNS Issues
+- Storage Failures
+- API Server Failures
+- etcd Issues
 
 ---
 
-# Technology Stack
+## 🧠 Explainable Root Cause Analysis
 
-| Category           | Technologies            |
-| ------------------ | ----------------------- |
-| Language           | Python                  |
-| Workflow Engine    | LangGraph               |
-| LLM Framework      | LangChain               |
-| Kubernetes         | Kubernetes API, Kubectl |
-| Monitoring         | Prometheus              |
-| Backend            | FastAPI                 |
-| Database           | SQLite / SQLAlchemy     |
-| AI Models          | OpenAI Compatible LLMs  |
-| Container Platform | Docker, Kubernetes      |
-| Version Control    | Git                     |
-| Operating Systems  | Windows, Linux          |
+AI-SRE combines:
 
+- Kubernetes resources
+- Cluster events
+- Application logs
+- Prometheus metrics
+- Historical incidents
+- Investigation playbooks
 
+to identify:
 
-# System Architecture
-
-AI-SRE is designed as a modular platform where every component has a single responsibility. This separation makes the system extensible, easier to test, and allows individual modules to evolve independently.
-
-At a high level, the platform consists of six major layers.
-
-```text
-                    ┌──────────────────────────┐
-                    │       React Frontend     │
-                    └─────────────┬────────────┘
-                                  │
-                                  ▼
-                    ┌──────────────────────────┐
-                    │      FastAPI Backend     │
-                    └─────────────┬────────────┘
-                                  │
-                ┌─────────────────┴─────────────────┐
-                │                                   │
-                ▼                                   ▼
-      Investigation Workflow             Execution Workflow
-          (LangGraph)                       (LangGraph)
-                │                                   │
-                └───────────────┬───────────────────┘
-                                ▼
-                     Kubernetes Service Layer
-                                │
-               ┌────────────────┴─────────────────┐
-               │                                  │
-               ▼                                  ▼
-        Kubernetes API                     Prometheus API
-               │                                  │
-               └────────────────┬─────────────────┘
-                                ▼
-                         Target Cluster
-```
-
-The frontend provides operators with visibility into cluster health, incidents, investigations, remediation plans, and execution history.
-
-The FastAPI backend exposes REST APIs, manages workflows, persists investigation history, and coordinates communication between AI agents and Kubernetes.
-
-The LangGraph workflows orchestrate the complete investigation and remediation lifecycle while maintaining state across every stage of execution.
+- Root cause
+- Supporting evidence
+- Confidence score
+- Operational explanation
 
 ---
 
-# Investigation Workflow
+## 📋 Intelligent Planning
 
-The investigation workflow is responsible for understanding **what happened**, **why it happened**, and **what should be done**. It focuses entirely on reasoning and decision making without modifying the Kubernetes cluster.
+Each remediation contains:
 
-## Investigation Graph
+- Recommended actions
+- kubectl commands
+- Operational reasoning
+- Estimated impact
+- Rollback strategy
+- Risk level
 
-```text
-                               START
-                                 │
-                                 ▼
-                  Load Previous Investigation
-                                 │
-                                 ▼
-                    Collect Initial Evidence
-                                 │
-                                 ▼
-                     Classify Incident Type
-                                 │
-                                 ▼
-                  Collect Adaptive Evidence
-                                 │
-                                 ▼
-                       Format Evidence
-                                 │
-                                 ▼
-                    Root Cause Analysis (LLM)
-                                 │
-                                 ▼
-                     Generate Remediation Plan
-                                 │
-                                 ▼
-                      Approval Decision
-                                 │
-                                 ▼
-                    Persist Investigation
-                                 │
-                                 ▼
-                                END
-```
+Every recommendation is fully explainable before execution.
 
 ---
 
-## 1. Load Previous Investigation
+## 🛡 Human-in-the-Loop Automation
 
-Before beginning a new investigation, AI-SRE determines whether the current incident is a retry of a previous failed remediation.
-
-If previous attempts exist, summaries of earlier investigations are loaded into the workflow.
-
-This enables the reasoning agent to avoid repeatedly recommending unsuccessful remediation strategies.
-
----
-
-## 2. Collect Initial Evidence
-
-The Evidence Builder gathers the minimum information required to understand the deployment's current state.
-
-Examples include:
-
-* Deployment specification
-* ReplicaSets
-* Pod status
-* Pod events
-* Container logs
-* Namespace information
-* Kubernetes metadata
-
-At this stage the objective is to build a concise snapshot of the deployment without collecting unnecessary information.
-
----
-
-## 3. Incident Classification
-
-The Incident Classifier analyzes the collected evidence and categorizes the failure into a known incident type.
-
-Typical categories include:
-
-* CrashLoopBackOff
-* ImagePullBackOff
-* Pending Pods
-* OOMKilled
-* Probe Failures
-* Scheduling Failures
-* Configuration Errors
-
-Incident classification determines which investigation playbook will be executed during the next stage.
-
----
-
-## 4. Adaptive Evidence Collection
-
-Rather than collecting every Kubernetes resource, AI-SRE uses playbooks to gather only the information relevant to the detected incident.
-
-Examples include:
-
-CrashLoopBackOff
-
-* Previous ReplicaSets
-* Restart history
-* Probe configuration
-
-OOMKilled
-
-* Resource limits
-* Resource requests
-* Container memory metrics
-
-ImagePullBackOff
-
-* Image name
-* Pull secrets
-* Registry configuration
-
-Scheduling Failure
-
-* Node capacity
-* Taints
-* Affinity rules
-
-This adaptive approach significantly reduces investigation time while improving reasoning quality.
-
----
-
-## 5. Evidence Formatting
-
-Raw Kubernetes objects are difficult for language models to reason over directly.
-
-The formatter converts the collected evidence into a structured representation that:
-
-* removes unnecessary metadata
-* preserves operational context
-* minimizes prompt size
-* improves LLM reasoning efficiency
-
----
-
-## 6. Root Cause Analysis
-
-The Root Cause Agent receives:
-
-* formatted evidence
-* incident type
-* playbook knowledge
-* previous investigation summaries
-
-Using this information, the LLM determines:
-
-* probable root cause
-* confidence score
-* supporting reasoning
-
-Unlike rule-based systems, the reasoning process incorporates multiple evidence sources simultaneously.
-
----
-
-## 7. Remediation Planning
-
-Once the root cause has been identified, the Remediation Agent proposes a recovery strategy.
-
-The generated plan contains:
-
-* remediation steps
-* kubectl commands
-* operational reasoning
-* estimated risk
-* rollback availability
-* approval requirement
-
-Each remediation step is represented as executable Kubernetes operations that can later be reviewed or executed automatically.
-
----
-
-## 8. Approval
-
-Every remediation passes through an approval stage.
-
-Three possible outcomes exist:
-
-### No Action Required
-
-The deployment is healthy or no corrective action is necessary.
-
----
-
-### Automatically Approved
-
-Low-risk operations may be executed without operator intervention.
+Low-risk actions execute automatically.
 
 Examples:
 
-* rollout restart
-* scale deployment
-* delete failed pod
+- Restart Deployment
+- Delete failed Pod
+- Scale replicas
+
+High-risk actions require approval.
+
+Examples:
+
+- Modify Deployments
+- Update ConfigMaps
+- Rotate Secrets
+- Delete resources
+- Rollback production releases
 
 ---
 
-### Pending Human Approval
+## ⚡ Automated Verification
 
-Potentially disruptive operations require manual approval.
+Recovery is not considered successful until AI-SRE verifies:
 
-Examples include:
-
-* deleting resources
-* modifying deployment configuration
-* updating container images
-* changing ConfigMaps
-* modifying Secrets
-
-This separation allows safe automation without sacrificing operational control.
+- Deployment rollout
+- Replica availability
+- Pod readiness
+- Container health
+- Probe status
+- CrashLoopBackOff recurrence
 
 ---
 
-## 9. Persist Investigation
+## 📚 Persistent Incident Memory
 
-Finally, the complete investigation is stored within the database.
+Every investigation stores:
 
-Persisted information includes:
+- Evidence
+- Diagnosis
+- Planning
+- Execution
+- Verification
+- Final report
 
-* Incident
-* Evidence
-* Root Cause
-* Confidence
-* Remediation Plan
-* Approval Status
-
-The generated Incident ID becomes the starting point of the execution workflow.
+Future investigations can reuse previous operational knowledge.
 
 ---
 
-# Why Separate Investigation from Execution?
+# 🏛 Design Principles
 
-A common limitation of many autonomous remediation systems is that reasoning and execution are tightly coupled.
+AI-SRE follows six core principles.
 
-AI-SRE intentionally separates these responsibilities.
-
-The Investigation Workflow focuses exclusively on answering:
-
-* What failed?
-* Why did it fail?
-* What is the safest remediation?
-
-Only after an investigation has been reviewed or approved does the Execution Workflow begin.
-
-This separation provides:
-
-* safer automation
-* human oversight for risky operations
-* reproducible investigations
-* complete audit trails
-* the ability to retry execution without repeating the investigation
-
-# Execution Workflow
-
-Unlike the Investigation Workflow, which focuses on reasoning and decision making, the **Execution Workflow** is responsible for safely applying approved remediations, validating cluster recovery, and maintaining a complete execution history.
-
-The workflow is intentionally separated from investigation so that execution can occur immediately after approval or at a later time without repeating the diagnostic process.
+| Principle | Description |
+|-----------|-------------|
+| Explainability | Every decision includes supporting evidence |
+| Safety | High-risk actions always require approval |
+| Modularity | Independent agents with single responsibilities |
+| Extensibility | New collectors and playbooks are easily added |
+| Auditability | Every operation is permanently recorded |
+| Cloud Native | Built around Kubernetes-first design |
 
 ---
 
-# Execution Graph
+# 🛠 Technology Stack
 
-```text
-                           START
-                             │
-                             ▼
-                    Load Investigation
-                             │
-                             ▼
-                  Execute Remediation
-                             │
-                             ▼
-                Verify Deployment Health
-                  (Automatic Retries)
-                             │
-                             ▼
-                 Generate Execution Report
-                             │
-                             ▼
-                  Persist Execution Result
-                             │
-                             ▼
-                            END
+| Layer | Technology |
+|--------|------------|
+| Frontend | React |
+| Backend | FastAPI |
+| Workflow Engine | LangGraph |
+| AI Framework | LangChain |
+| LLM | Configurable Provider |
+| Database | PostgreSQL |
+| Monitoring | Prometheus |
+| Cluster API | Kubernetes Python Client |
+| Containers | Docker |
+| Deployment | Kubernetes |
+
+---
+
+# 📊 Project Highlights
+
+- ✅ Agentic AI Architecture
+- ✅ Kubernetes-Native Design
+- ✅ Adaptive Investigation Workflow
+- ✅ Multi-Agent Reasoning
+- ✅ Human-in-the-Loop Safety
+- ✅ Explainable AI Decisions
+- ✅ Multi-Cluster Ready
+- ✅ Extensible Playbook Engine
+- ✅ Production-Oriented Architecture
+- ✅ Designed for Cloud-Native SRE
+
+---
+
+> 📖 Continue to **Part 2 — System Architecture**, where we explore the overall architecture, Mermaid diagrams, LangGraph orchestration, and the complete incident lifecycle.
 ```
 
----
+````markdown
+# 🏗️ System Architecture
 
-# 1. Load Investigation
+AI-SRE follows a modular, agent-based architecture that separates **investigation**, **decision making**, **execution**, and **verification**.
 
-The workflow begins by loading the previously completed investigation using the Incident ID.
-
-Rather than recomputing the root cause, the workflow retrieves all previously generated information, including:
-
-* Cluster information
-* Namespace
-* Deployment
-* Incident type
-* Root cause
-* Collected evidence
-* Remediation plan
-* Risk assessment
-
-This separation allows investigations to be performed once while execution can occur multiple times if necessary.
-
----
-
-# 2. Execute Remediation
-
-The Execution Agent is responsible for applying the approved remediation plan to the target Kubernetes cluster.
-
-Each remediation step contains:
-
-* Human-readable description
-* Kubectl command
-* Expected outcome
-
-For every step, AI-SRE records:
-
-* Executed command
-* Success or failure
-* Standard output
-* Standard error
-* Execution timestamp
-
-Example:
-
-```text
-Step 1
-Rollout Restart Deployment
-
-kubectl rollout restart deployment sample-backend
-
-Status
-✓ Success
-```
-
-If any command fails, execution stops immediately.
-
-This prevents partially applied remediations from causing additional instability.
-
----
-
-# Command Execution Layer
-
-Instead of executing shell commands directly throughout the codebase, every Kubernetes operation is routed through a dedicated Kubectl Tool.
-
-The tool automatically:
-
-* Loads the correct kubeconfig
-* Selects the correct cluster
-* Executes commands
-* Captures output
-* Reports execution status
-
-This abstraction keeps all Kubernetes communication centralized and makes supporting multiple clusters significantly simpler.
-
----
-
-# Multi-Cluster Execution
-
-Every incident stores its originating Cluster ID.
-
-Before executing any remediation, AI-SRE automatically loads the corresponding kubeconfig and switches to the correct cluster.
-
-This guarantees that remediation commands are always executed against the intended environment.
-
-```text
-Incident
-
-↓
-
-Cluster ID
-
-↓
-
-Load kubeconfig
-
-↓
-
-Execute kubectl command
-
-↓
-
-Target Cluster
-```
-
-This design enables the platform to safely manage multiple Kubernetes clusters simultaneously.
-
----
-
-# 3. Verification
-
-Successfully executing commands does not necessarily mean that the deployment has recovered.
-
-For example:
-
-* Rollout restart may fail.
-* New pods may still crash.
-* Readiness probes may continue failing.
-* Replica count may remain unavailable.
-
-Therefore, every remediation is followed by an independent verification stage.
-
----
-
-# Verification Strategy
-
-The Verification Agent repeatedly evaluates deployment health.
-
-Typical checks include:
-
-* Deployment exists
-* Desired replicas available
-* Updated replicas available
-* Pods Ready
-* Rollout completed
-* No CrashLoopBackOff
-* No Pending replicas
-
-Rather than checking only once, verification retries several times with configurable delays.
-
-```text
-Verification Attempt 1
-
-↓
-
-Deployment unhealthy
-
-↓
-
-Wait
-
-↓
-
-Verification Attempt 2
-
-↓
-
-Deployment unhealthy
-
-↓
-
-Wait
-
-↓
-
-Verification Attempt 3
-
-↓
-
-Deployment healthy
-
-↓
-
-Success
-```
-
-This retry strategy avoids false failures caused by Kubernetes still performing a rollout.
-
----
-
-# 4. Execution Report Generation
-
-Once verification completes, the Summarizer Agent produces a structured operational report.
-
-The report includes:
-
-## Incident Summary
-
-* Cluster
-* Namespace
-* Deployment
-* Incident type
-
----
-
-## Root Cause
-
-The diagnosis produced during the investigation.
-
----
-
-## Remediation Summary
-
-* Commands executed
-* Execution status
-* Failures
-* Risk level
-
----
-
-## Verification Results
-
-* Deployment health
-* Recovery status
-* Verification outcome
-
----
-
-## Operational Summary
-
-A concise explanation describing:
-
-* what happened
-* what actions were taken
-* whether recovery was successful
-* remaining concerns
-
-This report provides engineers with a complete narrative of the incident.
-
----
-
-# 5. Persistence
-
-The final workflow stage stores the execution results.
-
-Persisted information includes:
-
-## Execution History
-
-* Commands executed
-* Success status
-* Output
-* Errors
-
----
-
-## Verification
-
-* Verification attempts
-* Deployment health
-* Final status
-
----
-
-## Report
-
-* Generated summary
-* Operational recommendations
-* Recovery confirmation
-
-Maintaining this execution history enables future investigations to learn from previous remediation attempts.
-
----
-
-# Why Persist Execution?
-
-Historical execution data provides several advantages:
-
-* Complete audit trail
-* Regulatory compliance
-* Incident timeline reconstruction
-* Retry optimization
-* Operational analytics
-* Continuous improvement
-
-Future investigations can incorporate previous execution outcomes to avoid repeating unsuccessful remediation strategies.
-
----
-
-# Complete AI-SRE Lifecycle
-
-```text
-                    Kubernetes Incident
-                             │
-                             ▼
-                  Investigation Workflow
-                             │
-                             ▼
-                 Root Cause Identified
-                             │
-                             ▼
-                Remediation Plan Created
-                             │
-                             ▼
-                    Approval Decision
-                             │
-               ┌─────────────┴─────────────┐
-               │                           │
-               ▼                           ▼
-        Pending Approval            Auto Approved
-               │                           │
-               └─────────────┬─────────────┘
-                             ▼
-                  Execution Workflow
-                             │
-                             ▼
-                 Execute Kubernetes Commands
-                             │
-                             ▼
-                Verify Deployment Recovery
-                             │
-                             ▼
-                  Generate Execution Report
-                             │
-                             ▼
-                  Persist Investigation Data
-                             │
-                             ▼
-                     Incident Resolved
-```
+Instead of relying on static automation scripts, AI-SRE models incident response as a **stateful graph** using **LangGraph**, allowing the system to adapt its investigation based on the evidence collected.
 
 ---
 
 # Design Philosophy
 
-The platform intentionally separates **reasoning**, **execution**, and **verification** into independent stages.
+The architecture is built around one simple principle:
 
-This architecture provides several important advantages:
+> **Think before you act.**
 
-* Investigations remain reproducible.
-* Executions can be retried without repeating expensive AI reasoning.
-* Human approval can be inserted before any high-risk action.
-* Every remediation is independently verified.
-* Complete investigation and execution histories are preserved for future learning.
+Traditional automation systems often execute predefined commands immediately after detecting an alert.
 
-By combining deterministic Kubernetes operations with LLM-assisted reasoning, AI-SRE delivers an autonomous yet auditable incident response system suitable for modern multi-cluster Kubernetes environments.
+AI-SRE instead follows this sequence:
 
+1. Understand the incident
+2. Collect evidence
+3. Reason about the evidence
+4. Generate a remediation plan
+5. Evaluate operational risk
+6. Obtain approval (if required)
+7. Execute the remediation
+8. Verify recovery
+9. Learn from the incident
 
-## Investigation Workflow
-
-Validated against incidents including:
-
-* CrashLoopBackOff
-* ImagePullBackOff
-* Pending Pods
-* OOMKilled
-* Failed Readiness Probe
-* Failed Liveness Probe
-* Resource Exhaustion
-* Invalid Image
-* Scheduling Failure
-* Replica Failure
+This separation dramatically improves safety, explainability, and auditability.
 
 ---
 
-# Current Limitations
+# High-Level Architecture
 
-AI-SRE is an actively evolving project.
+```mermaid
+flowchart TB
 
-Current limitations include:
+    User["👨‍💻 Operator"]
 
-* Supports Kubernetes workloads only.
-* Relies on Prometheus for metrics collection.
-* Root cause quality depends on the completeness of collected evidence.
-* Investigation quality depends on available playbooks.
-* Some high-risk remediations intentionally require manual approval.
+    UI["React Dashboard"]
+
+    API["FastAPI Backend"]
+
+    LG["LangGraph Orchestrator"]
+
+    subgraph Investigation
+
+        EB["Evidence Builder"]
+
+        IC["Incident Classifier"]
+
+        PB["Playbook Engine"]
+
+        RCA["Reasoning Agent"]
+
+        PLAN["Planning Agent"]
+
+        RISK["Risk Assessment"]
+
+        APPROVAL["Approval Agent"]
+
+    end
+
+    subgraph Execution
+
+        EXEC["Execution Agent"]
+
+        VERIFY["Verification Agent"]
+
+        REPORT["Report Generator"]
+
+    end
+
+    subgraph Infrastructure
+
+        K8S["Kubernetes"]
+
+        PROM["Prometheus"]
+
+        PG["PostgreSQL"]
+
+    end
+
+User --> UI
+
+UI --> API
+
+API --> LG
+
+LG --> EB
+
+EB --> IC
+
+IC --> PB
+
+PB --> RCA
+
+RCA --> PLAN
+
+PLAN --> RISK
+
+RISK --> APPROVAL
+
+APPROVAL --> EXEC
+
+EXEC --> VERIFY
+
+VERIFY --> REPORT
+
+EB --> K8S
+
+EB --> PROM
+
+EXEC --> K8S
+
+REPORT --> PG
+
+RCA --> PG
+```
 
 ---
 
-# Future Enhancements
+# Component Responsibilities
 
-Planned improvements include:
+| Component | Responsibility |
+|------------|----------------|
+| React | Operator dashboard |
+| FastAPI | REST API and orchestration entry point |
+| LangGraph | Workflow orchestration |
+| Evidence Builder | Collects Kubernetes evidence |
+| Incident Classifier | Detects incident category |
+| Playbook Engine | Chooses investigation strategy |
+| Reasoning Agent | Determines root cause |
+| Planning Agent | Generates remediation |
+| Risk Assessment | Evaluates operational impact |
+| Approval Agent | Determines execution policy |
+| Execution Agent | Executes Kubernetes operations |
+| Verification Agent | Confirms successful recovery |
+| PostgreSQL | Stores investigations and execution history |
 
-* Grafana integration
-* Alertmanager integration
-* Prometheus Operator support
-* Distributed investigation across clusters
-* Automatic incident prioritization
-* Continuous cluster health monitoring
-* Fine-tuned LLMs for Kubernetes troubleshooting
-* Retrieval-Augmented Generation (RAG) over Kubernetes documentation
-* Historical trend analysis
-* Cost-aware remediation recommendations
-* Support for additional cloud providers
-* Policy-driven autonomous remediation
-* Multi-agent collaboration for complex failures
+---
+
+# Layered Architecture
+
+```mermaid
+flowchart TB
+
+subgraph Presentation
+
+React
+
+CLI
+
+end
+
+subgraph API
+
+FastAPI
+
+end
+
+subgraph AI
+
+LangGraph
+
+Agents
+
+end
+
+subgraph Services
+
+Collectors
+
+Playbooks
+
+Execution
+
+Verification
+
+end
+
+subgraph Infrastructure
+
+Kubernetes
+
+Prometheus
+
+PostgreSQL
+
+end
+
+Presentation --> API
+
+API --> AI
+
+AI --> Services
+
+Services --> Infrastructure
+```
+
+---
+
+# Incident Lifecycle
+
+```mermaid
+flowchart LR
+
+Incident
+
+--> Evidence
+
+--> Classification
+
+--> Investigation
+
+--> Reasoning
+
+--> Planning
+
+--> Risk
+
+--> Approval
+
+--> Execution
+
+--> Verification
+
+--> IncidentMemory
+```
+
+Every incident follows the same high-level lifecycle, while the internal investigation adapts depending on the incident type.
+
+---
+
+# Investigation vs Execution
+
+One of AI-SRE's core design decisions is separating investigation from execution.
+
+| Investigation | Execution |
+|---------------|-----------|
+| Read-only | Read & Write |
+| Builds evidence | Applies remediation |
+| Uses AI reasoning | Uses deterministic tooling |
+| No cluster modifications | Modifies Kubernetes resources |
+| Produces remediation plan | Executes approved plan |
+| Safe to rerun | Requires safeguards |
+
+This separation ensures that diagnosis can be repeated without affecting production systems.
+
+---
+
+# Data Flow
+
+```mermaid
+flowchart LR
+
+Kubernetes --> EvidenceBuilder
+
+Prometheus --> EvidenceBuilder
+
+EvidenceBuilder --> Formatter
+
+Formatter --> Reasoning
+
+Reasoning --> Planning
+
+Planning --> RiskAssessment
+
+RiskAssessment --> Approval
+
+Approval --> Execution
+
+Execution --> Verification
+
+Verification --> PostgreSQL
+```
+
+---
+
+# Agent Collaboration
+
+Unlike traditional automation systems where a single component performs every task, AI-SRE assigns one responsibility to each agent.
+
+```mermaid
+graph LR
+
+EvidenceBuilder --> Classifier
+
+Classifier --> Playbook
+
+Playbook --> Reasoning
+
+Reasoning --> Planner
+
+Planner --> Risk
+
+Risk --> Approval
+
+Approval --> Executor
+
+Executor --> Verification
+
+Verification --> Report
+```
+
+Each agent receives structured input from the previous stage and produces structured output for the next stage.
+
+This modular architecture makes the platform easier to maintain, test, and extend.
 
 ---
 
 # Why LangGraph?
 
-Traditional automation systems execute fixed sequences of predefined steps.
+LangGraph is used because incident response is **stateful**.
 
-AI-SRE uses LangGraph because incident investigation is inherently stateful and adaptive.
+Production investigations require:
 
-LangGraph enables:
+- Conditional execution
+- Retry logic
+- Human approval
+- Dynamic evidence collection
+- Persistent state
+- Long-running workflows
 
-* Persistent workflow state
-* Conditional execution paths
-* Retry logic
-* Human-in-the-loop approvals
-* Separation of reasoning and execution
-* Clear orchestration of AI agents
-
-This makes the investigation pipeline easier to extend, debug, and maintain as new incident types and capabilities are added.
+A graph-based workflow engine naturally models these requirements better than linear pipelines.
 
 ---
 
-# Acknowledgements
+# External Integrations
 
-This project builds upon several outstanding open-source technologies:
-
-* Kubernetes
-* Prometheus
-* LangChain
-* LangGraph
-* FastAPI
-* SQLAlchemy
-* Docker
-
-Their ecosystems provide the foundation that enables AI-SRE to automate modern cloud-native operations.
+| System | Purpose |
+|---------|----------|
+| Kubernetes API | Cluster state and execution |
+| Prometheus | Metrics collection |
+| PostgreSQL | Investigation persistence |
+| Docker | Containerization |
+| React | User interface |
 
 ---
 
+# What's Next?
 
-# Final Note
+The next document explains the complete investigation pipeline in detail.
 
-AI-SRE demonstrates how Large Language Models can be integrated with Kubernetes observability, deterministic automation, and structured workflows to build an intelligent operational assistant for modern cloud-native systems.
+➡️ **Continue with:** `docs/investigation.md`
+````
 
-Rather than replacing Site Reliability Engineers, the platform augments their capabilities by reducing repetitive investigation effort, accelerating root cause analysis, standardizing remediation workflows, and preserving operational knowledge for future incidents.
+````markdown
+# 🔍 Investigation Workflow
 
+The Investigation Workflow is the intelligence core of AI-SRE.
+
+Unlike traditional monitoring systems that simply collect metrics or trigger alerts, AI-SRE actively investigates production incidents by gathering evidence, selecting an appropriate investigation strategy, reasoning over the collected information, and generating an explainable remediation plan.
+
+> **This workflow never modifies the Kubernetes cluster.**
+>
+> Its sole responsibility is to understand the incident and recommend the safest recovery strategy.
+
+---
+
+# Investigation Goals
+
+Every investigation attempts to answer five questions:
+
+1. **What happened?**
+2. **Why did it happen?**
+3. **How confident are we?**
+4. **What should be done?**
+5. **Is the proposed action safe?**
+
+Only after these questions are answered does AI-SRE proceed to execution.
+
+---
+
+# Complete Investigation Pipeline
+
+```mermaid
+flowchart LR
+
+START([Incident])
+
+A[Load Incident Context]
+
+B[Evidence Builder]
+
+C[Incident Classifier]
+
+D[Playbook Engine]
+
+E[Adaptive Evidence Collection]
+
+F[Evidence Formatter]
+
+G[Reasoning Agent]
+
+H[Planning Agent]
+
+I[Risk Assessment]
+
+J[Approval Decision]
+
+K[Persist Investigation]
+
+END([Execution Workflow])
+
+START --> A
+A --> B
+B --> C
+C --> D
+D --> E
+E --> F
+F --> G
+G --> H
+H --> I
+I --> J
+J --> K
+K --> END
+```
+
+---
+
+# Investigation State
+
+Throughout the workflow, LangGraph maintains a shared investigation state.
+
+```mermaid
+flowchart LR
+
+Incident
+
+--> Evidence
+
+--> Classification
+
+--> Playbook
+
+--> Reasoning
+
+--> Plan
+
+--> Risk
+
+--> Approval
+```
+
+Each agent reads from the shared state, enriches it, and passes it to the next stage.
+
+This approach eliminates duplicated API calls and enables stateful reasoning across the entire investigation.
+
+---
+
+# Stage 1 — Load Incident Context
+
+Every investigation begins with a minimal incident description.
+
+Typical inputs include:
+
+- Cluster name
+- Namespace
+- Deployment
+- Pod
+- Alert source
+- Incident timestamp
+
+Example:
+
+```yaml
+cluster: production
+namespace: payments
+deployment: payment-service
+pod: payment-service-54db8
+incident_type: CrashLoopBackOff
+```
+
+The investigation context uniquely identifies the affected workload before evidence collection begins.
+
+---
+
+# Stage 2 — Evidence Builder
+
+The Evidence Builder is responsible for constructing an operational snapshot of the affected workload.
+
+It acts as the primary interface between AI-SRE and Kubernetes.
+
+Initially, only lightweight evidence is collected.
+
+Examples include:
+
+- Pod
+- Deployment
+- ReplicaSet
+- Namespace
+- Events
+- Labels
+- Annotations
+- Container status
+
+The purpose of this stage is to provide enough information for incident classification without collecting unnecessary resources.
+
+---
+
+## Evidence Builder Architecture
+
+```mermaid
+flowchart TD
+
+Pod --> Builder
+
+Deployment --> Builder
+
+ReplicaSet --> Builder
+
+Events --> Builder
+
+Namespace --> Builder
+
+Labels --> Builder
+
+Builder --> EvidenceBundle
+```
+
+The output of this stage is a structured evidence bundle shared with downstream agents.
+
+---
+
+# Stage 3 — Incident Classification
+
+Not every incident should follow the same investigation strategy.
+
+AI-SRE first determines the most probable failure category.
+
+Supported categories include:
+
+| Incident | Description |
+|-----------|-------------|
+| CrashLoopBackOff | Repeated container crashes |
+| OOMKilled | Memory exhaustion |
+| Pending Pods | Scheduling failures |
+| ImagePullBackOff | Image retrieval failure |
+| Failed Readiness Probe | Service unavailable |
+| Failed Liveness Probe | Container restart loop |
+| DNS Failure | Cluster DNS issues |
+| Storage Failure | Persistent volume problems |
+| API Server Failure | Kubernetes control plane |
+| etcd Failure | Cluster state issues |
+
+Incident classification determines which playbook should be executed.
+
+---
+
+# Stage 4 — Playbook Engine
+
+Each incident category has its own investigation strategy.
+
+Instead of collecting every Kubernetes resource, AI-SRE only gathers information relevant to the detected incident.
+
+For example:
+
+## CrashLoopBackOff
+
+Collect:
+
+- Previous logs
+- Restart history
+- Exit code
+- Probe configuration
+- ReplicaSet history
+
+---
+
+## Pending Pods
+
+Collect:
+
+- Scheduler events
+- Node capacity
+- Taints
+- Tolerations
+- Affinity
+- Resource availability
+
+---
+
+## OOMKilled
+
+Collect:
+
+- Memory limits
+- Memory requests
+- Prometheus memory metrics
+- Previous OOM events
+
+---
+
+## DNS Failure
+
+Collect:
+
+- CoreDNS logs
+- Services
+- Endpoints
+- Network policies
+- DNS configuration
+
+---
+
+# Playbook Selection
+
+```mermaid
+flowchart TD
+
+Classifier
+
+--> CrashLoopPlaybook
+
+Classifier
+
+--> OOMPlaybook
+
+Classifier
+
+--> PendingPlaybook
+
+Classifier
+
+--> DNSPlaybook
+```
+
+This design makes AI-SRE highly extensible.
+
+Adding support for a new incident only requires implementing a new playbook.
+
+---
+
+# Stage 5 — Adaptive Evidence Collection
+
+One of AI-SRE's key innovations is adaptive investigation.
+
+Instead of collecting everything up front, the Reasoning Agent determines whether additional evidence is required.
+
+```mermaid
+flowchart TD
+
+Evidence
+
+--> Reasoning
+
+Reasoning
+
+--> Decision{Enough Evidence?}
+
+Decision
+
+-->|Yes| Planning
+
+Decision
+
+-->|No| Collector
+
+Collector
+
+--> Evidence
+```
+
+This dramatically reduces:
+
+- Kubernetes API calls
+- Prompt size
+- Investigation latency
+
+while improving reasoning quality.
+
+---
+
+# Stage 6 — Evidence Formatter
+
+Raw Kubernetes objects contain a significant amount of metadata that is irrelevant for AI reasoning.
+
+The formatter transforms collected resources into compact, structured documents.
+
+Responsibilities include:
+
+- Removing unnecessary metadata
+- Normalizing Kubernetes resources
+- Preserving operational context
+- Compressing prompt size
+- Standardizing collector output
+
+The result is optimized for LLM consumption.
+
+---
+
+# Investigation Artifacts
+
+Each completed investigation produces:
+
+| Artifact | Purpose |
+|-----------|----------|
+| Evidence Bundle | Operational snapshot |
+| Incident Classification | Failure category |
+| Investigation Playbook | Collection strategy |
+| Root Cause | Diagnosis |
+| Confidence Score | AI certainty |
+| Remediation Plan | Recovery strategy |
+| Risk Level | Execution safety |
+
+These artifacts are persisted and reused during future investigations.
+
+---
+
+# Why Adaptive Investigation?
+
+Traditional systems often collect every available metric regardless of relevance.
+
+AI-SRE instead behaves like an experienced SRE:
+
+1. Gather initial evidence.
+2. Form a hypothesis.
+3. Request additional evidence only if required.
+4. Refine the hypothesis.
+5. Produce a diagnosis.
+
+This mirrors how human operators investigate complex production incidents while minimizing unnecessary API calls and reducing reasoning latency.
+
+---
+
+# What's Next?
+
+Once the investigation produces a validated remediation plan, control passes to the **Execution Workflow**, where AI-SRE safely applies the approved recovery actions and verifies that the cluster has returned to a healthy state.
+
+➡️ **Continue with:** `docs/execution.md`
+````
+
+````markdown
+# ⚙️ Execution Workflow
+
+The Investigation Workflow determines **what should be done**.
+
+The Execution Workflow determines **how it should be done safely**.
+
+Unlike investigation, execution directly interacts with the Kubernetes cluster by applying approved remediation plans, verifying system health, and recording every action for auditing.
+
+---
+
+# Execution Philosophy
+
+AI-SRE follows one fundamental rule:
+
+> **Never execute before understanding.**
+
+Every execution originates from a completed investigation.
+
+This guarantees that remediation is:
+
+- Explainable
+- Auditable
+- Risk Assessed
+- Approved (when required)
+- Verifiable
+
+---
+
+# Complete Execution Pipeline
+
+```mermaid
+flowchart LR
+
+START([Approved Plan])
+
+LOAD[Load Investigation]
+
+VALIDATE[Validate Plan]
+
+EXECUTE[Execution Agent]
+
+VERIFY[Verification Agent]
+
+REPORT[Generate Report]
+
+STORE[Persist Execution]
+
+END([Completed])
+
+START --> LOAD
+LOAD --> VALIDATE
+VALIDATE --> EXECUTE
+EXECUTE --> VERIFY
+VERIFY --> REPORT
+REPORT --> STORE
+STORE --> END
+```
+
+---
+
+# Execution Responsibilities
+
+The execution workflow performs five major tasks.
+
+| Stage | Responsibility |
+|--------|----------------|
+| Validation | Verify remediation plan integrity |
+| Execution | Apply Kubernetes operations |
+| Verification | Confirm cluster recovery |
+| Reporting | Generate execution summary |
+| Persistence | Store execution history |
+
+---
+
+# Loading the Investigation
+
+Execution begins by loading the completed investigation.
+
+The workflow retrieves:
+
+- Incident details
+- Root cause
+- Evidence bundle
+- Approved remediation plan
+- Risk level
+- Approval status
+
+Execution never performs additional reasoning.
+
+It strictly follows the approved plan.
+
+---
+
+# Plan Validation
+
+Before executing any action, AI-SRE validates the remediation plan.
+
+Validation includes:
+
+- Cluster exists
+- Namespace exists
+- Deployment exists
+- Required permissions available
+- Target resources reachable
+- Plan not expired
+
+If validation fails, execution terminates immediately.
+
+---
+
+# Validation Workflow
+
+```mermaid
+flowchart TD
+
+Plan
+
+--> Cluster
+
+Cluster
+
+--> Namespace
+
+Namespace
+
+--> Deployment
+
+Deployment
+
+--> Permissions
+
+Permissions
+
+--> Execute
+```
+
+---
+
+# Execution Agent
+
+The Execution Agent applies remediation actions using deterministic Kubernetes tooling.
+
+Typical operations include:
+
+- Restart Deployment
+- Scale Deployment
+- Delete Pod
+- Rollout Restart
+- Rollback Deployment
+- Patch Resources
+- Restart StatefulSet
+
+Every action is executed independently.
+
+If any step fails, execution stops immediately.
+
+---
+
+# Execution State Machine
+
+```mermaid
+stateDiagram-v2
+
+[*] --> Waiting
+
+Waiting --> Executing
+
+Executing --> Success
+
+Executing --> Failed
+
+Success --> NextStep
+
+NextStep --> Executing
+
+NextStep --> Verification
+
+Verification --> Completed
+
+Failed --> Abort
+
+Completed --> [*]
+
+Abort --> [*]
+```
+
+---
+
+# Kubernetes Tool Layer
+
+The Execution Agent never invokes shell commands directly.
+
+Instead, every operation passes through a dedicated Kubernetes Tool Layer.
+
+Responsibilities include:
+
+- Loading kubeconfig
+- Selecting target cluster
+- Executing Kubernetes API calls
+- Capturing responses
+- Handling retries
+- Recording execution metadata
+
+This abstraction simplifies testing while supporting multiple clusters.
+
+---
+
+# Tool Architecture
+
+```mermaid
+flowchart LR
+
+ExecutionAgent
+
+--> KubernetesTool
+
+KubernetesTool
+
+--> KubernetesAPI
+
+KubernetesAPI
+
+--> Cluster
+```
+
+---
+
+# Risk Assessment
+
+Every remediation plan includes a predefined risk level.
+
+| Risk | Examples | Behaviour |
+|------|----------|-----------|
+| Low | Restart Pod | Execute Automatically |
+| Medium | Scale Deployment | Optional Approval |
+| High | Rollback Production | Mandatory Approval |
+| Critical | Delete Resources | Explicit Human Confirmation |
+
+Execution never bypasses the assigned policy.
+
+---
+
+# Approval Workflow
+
+```mermaid
+flowchart TD
+
+RiskAssessment
+
+--> Decision{Risk Level}
+
+Decision
+
+-->|Low| Execute
+
+Decision
+
+-->|Medium| Approval
+
+Decision
+
+-->|High| Approval
+
+Approval
+
+--> Execute
+```
+
+---
+
+# Verification Agent
+
+Successful command execution does **not** guarantee incident resolution.
+
+The Verification Agent continuously evaluates deployment health until either:
+
+- Recovery succeeds
+- Retry limit exceeded
+
+---
+
+# Verification Checks
+
+The Verification Agent validates:
+
+- Deployment Available
+- Desired Replicas
+- Updated Replicas
+- Ready Pods
+- Running Containers
+- Probe Status
+- CrashLoopBackOff
+- Pending Pods
+- Rollout Status
+
+Only when all required checks pass is the incident considered resolved.
+
+---
+
+# Verification Workflow
+
+```mermaid
+flowchart TD
+
+Execution
+
+--> Deployment
+
+Deployment
+
+--> Ready
+
+Ready
+
+--> Healthy{Healthy?}
+
+Healthy
+
+-->|No| Retry
+
+Retry
+
+--> Deployment
+
+Healthy
+
+-->|Yes| Report
+```
+
+---
+
+# Retry Strategy
+
+Production deployments require time to stabilize.
+
+Instead of failing immediately, AI-SRE retries verification.
+
+Typical retry policy:
+
+| Property | Example |
+|-----------|---------|
+| Attempts | 5 |
+| Delay | 15 seconds |
+| Strategy | Exponential Backoff |
+
+This prevents false failures during rolling deployments.
+
+---
+
+# Rollback Support
+
+If execution fails midway, AI-SRE can trigger rollback procedures.
+
+Rollback strategies include:
+
+- Deployment Rollback
+- Restore Previous Replica Count
+- Restore Previous Image
+- Restore Previous Configuration
+
+Rollback support depends on the remediation type.
+
+---
+
+# Execution Report
+
+Every execution generates a structured report.
+
+## Incident
+
+- Cluster
+- Namespace
+- Deployment
+- Incident Type
+
+---
+
+## Root Cause
+
+The diagnosis produced during investigation.
+
+---
+
+## Actions
+
+- Commands Executed
+- Execution Duration
+- Success / Failure
+- Rollback Performed
+
+---
+
+## Verification
+
+- Health Status
+- Verification Attempts
+- Final Result
+
+---
+
+## Summary
+
+A human-readable operational explanation describing:
+
+- What happened
+- Why it happened
+- What was executed
+- Whether recovery succeeded
+- Remaining recommendations
+
+---
+
+# Persistence
+
+Execution history is permanently stored.
+
+Stored information includes:
+
+- Investigation ID
+- Execution ID
+- Commands Executed
+- Verification Results
+- Operator Approval
+- Rollback Information
+- Execution Duration
+- Final Outcome
+
+This enables complete operational auditing.
+
+---
+
+# Multi-Cluster Execution
+
+Each execution is isolated to the originating cluster.
+
+The Execution Agent automatically loads:
+
+- Correct kubeconfig
+- Cluster credentials
+- Namespace
+- Context
+
+This prevents accidental cross-cluster operations.
+
+---
+
+# Safety Guarantees
+
+AI-SRE enforces several safety mechanisms before modifying production systems.
+
+✅ Approved remediation only
+
+✅ Risk-based execution
+
+✅ Human approval
+
+✅ Verification after execution
+
+✅ Automatic auditing
+
+✅ Complete execution history
+
+---
+
+# What's Next?
+
+The next document explains the internal AI agents that power AI-SRE, including:
+
+- Evidence Builder
+- Incident Classifier
+- Reasoning Agent
+- Planning Agent
+- Risk Assessment Agent
+- Approval Agent
+- Execution Agent
+- Verification Agent
+
+➡️ Continue with **`docs/agents.md`**
+````
