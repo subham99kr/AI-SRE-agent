@@ -168,14 +168,15 @@ RemediationPlan
 
 ### Investigation Stages
 
-| Stage                   | Description                                                      |
-| ----------------------- | ---------------------------------------------------------------- |
-| Evidence Collection     | Gather relevant Kubernetes resources, events, logs, and metadata |
-| Incident Classification | Detect the type of Kubernetes failure                            |
-| Playbook Selection      | Choose an investigation strategy based on the incident           |
-| Root Cause Analysis     | Analyze evidence using AI reasoning                              |
-| Remediation Planning    | Generate a safe recovery plan                                    |
-| Risk Assessment         | Determine whether approval is required                           |
+| Stage | Description |
+|-------|-------------|
+| Evidence Collection | Gather the initial Kubernetes resources, events, and workload context. |
+| Incident Classification | Identify the Kubernetes incident type (e.g., CrashLoopBackOff, OOMKilled). |
+| Adaptive Evidence Collection | Collect additional evidence based on the incident-specific playbook. |
+| Evidence Formatting | Transform raw Kubernetes data into structured, LLM-friendly context. |
+| Root Cause Analysis | Analyze the available evidence to determine the most likely root cause. |
+| Adaptive Investigation | Request additional evidence when the current information is insufficient, or fall back to manual investigation after the maximum number of attempts. |
+| Remediation Planning | Generate a recovery plan, assess operational risk, and determine whether human approval is required. |
 
 The investigation phase is **read-only** and never modifies the Kubernetes cluster.
 
