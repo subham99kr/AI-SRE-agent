@@ -90,17 +90,18 @@ J --> P
 
 Each agent is responsible for a single stage of the incident lifecycle.
 
-| Agent               | Responsibility                          |
-| ------------------- | --------------------------------------- |
-| Evidence Builder    | Collect Kubernetes resources and events |
-| Incident Classifier | Determine the failure category          |
-| Playbook Engine     | Select the investigation strategy       |
-| Reasoning Agent     | Identify the most likely root cause     |
-| Planning Agent      | Generate remediation steps              |
-| Risk Assessment     | Evaluate operational risk               |
-| Approval Agent      | Request human approval when needed      |
-| Execution Agent     | Apply approved Kubernetes actions       |
-| Verification Agent  | Confirm successful recovery             |
+| Component | Responsibility |
+|----------|----------------|
+| Evidence Builder | Collect initial Kubernetes resources and cluster context |
+| Incident Classifier | Identify the Kubernetes incident type |
+| Playbook Engine | Select the appropriate investigation strategy for the incident |
+| Evidence Collector | Gather additional incident-specific evidence based on the selected playbook |
+| Evidence Formatter | Convert raw Kubernetes resources into LLM-friendly context |
+| Root Cause Agent | Analyze evidence to determine the most probable root cause |
+| Remediation Agent | Generate remediation steps, assess risk, and determine approval requirements |
+| Execution Agent | Execute approved remediation actions on the Kubernetes cluster |
+| Verification Agent | Verify that the remediation successfully resolved the incident |
+| Summarizer Agent | Generate a human-readable incident and execution report |
 
 This modular design keeps the workflow explainable, maintainable, and easy to extend with new incident types.
 
